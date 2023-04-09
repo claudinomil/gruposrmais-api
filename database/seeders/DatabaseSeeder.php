@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             ModulosSeeder::class,
             SubmodulosSeeder::class,
             GenerosSeeder::class,
+            ContratacaoTiposSeeder::class,
+            ServicoTiposSeeder::class,
             EstadosCivisSeeder::class,
             IdentidadeOrgaosSeeder::class,
             NacionalidadesSeeder::class,

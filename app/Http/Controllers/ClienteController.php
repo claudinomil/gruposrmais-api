@@ -6,15 +6,9 @@ use App\API\ApiReturn;
 use App\Http\Requests\ClienteStoreRequest;
 use App\Http\Requests\ClienteUpdateRequest;
 use App\Models\Banco;
-use App\Models\ClientAddress;
-use App\Models\ClientTelephone;
+use App\Models\Funcionario;
 use App\Models\Genero;
 use App\Models\IdentidadeOrgao;
-use App\Models\EstadoCivil;
-use App\Models\Nacionalidade;
-use App\Models\Naturalidade;
-use App\Models\Funcao;
-use App\Models\Escolaridade;
 use App\Models\Estado;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -36,8 +30,10 @@ class ClienteController extends Controller
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
+            ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
+            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -69,6 +65,12 @@ class ClienteController extends Controller
 
             //Gêneros
             $registros['generos'] = Genero::all();
+
+            //Principal Clientes
+            $registros['principal_clientes'] = Cliente::all();
+
+            //Responsavel Funcionarios
+            $registros['responsavel_funcionarios'] = Funcionario::all();
 
             //Bancos
             $registros['bancos'] = Banco::all();
@@ -152,8 +154,10 @@ class ClienteController extends Controller
                 ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
                 ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
                 ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
+                ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
+                ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
                 ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-                ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'bancos.name as bancoName'])
+                ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
                 ->where('clientes.id', '=', $id)
                 ->get();
 
@@ -228,8 +232,10 @@ class ClienteController extends Controller
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
+            ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
+            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
@@ -242,8 +248,10 @@ class ClienteController extends Controller
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
+            ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
+            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
             ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
             ->get($fieldReturn);
 

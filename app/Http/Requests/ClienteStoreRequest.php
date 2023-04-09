@@ -24,6 +24,8 @@ class ClienteStoreRequest extends FormRequest
     public function rules()
     {
         return [
+            'principal_cliente_id' => ['nullable', 'integer', 'numeric'],
+            'responsavel_funcionario_id' => ['nullable', 'integer', 'numeric'],
             'status' => ['required'],
             'tipo' => ['required'],
             'name' => ['required', 'min:3'],
@@ -52,13 +54,15 @@ class ClienteStoreRequest extends FormRequest
             'telefone_1' => ['nullable', 'numeric', 'digits:10'],
             'telefone_2' => ['nullable', 'numeric', 'digits:10'],
             'celular_1' => ['nullable', 'numeric', 'digits:11'],
-            'celular_2' => ['nullable', 'numeric', 'digits:11']
+            'celular_2' => ['nullable', 'numeric', 'digits:11'],
         ];
     }
 
     public function messages()
     {
         return [
+            'principal_cliente_id.integer' => 'O Cliente Principal deve ser um ítem da lista.',
+            'responsavel_funcionario_id.integer' => 'O Responsável deve ser um ítem da lista.',
             'status.required' => 'O Status é requerido.',
             'tipo.required' => 'O Tipo é requerido.',
             'name.required' => 'O Nome é requerido.',
@@ -98,7 +102,7 @@ class ClienteStoreRequest extends FormRequest
             'celular_1.numeric' => 'O Celular 1 deve ser um número válido.',
             'celular_1.digits' => 'O Celular 1 deve ser um número válido.',
             'celular_2.numeric' => 'O Celular 2 deve ser um número válido.',
-            'celular_2.digits' => 'O Celular 2 deve ser um número válido.'
+            'celular_2.digits' => 'O Celular 2 deve ser um número válido.',
         ];
     }
 }

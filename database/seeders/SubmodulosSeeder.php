@@ -33,6 +33,8 @@ class SubmodulosSeeder extends Seeder
             ['id' => '21', 'modulo_id' => '2', 'name' => 'Dashboards', 'menu_text' => 'Dashboards', 'menu_url' => 'dashboards', 'menu_route' => 'dashboards', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'dashboards', 'prefix_route' => 'dashboards', 'viewing_order' => 1],
             ['id' => '22', 'modulo_id' => '2', 'name' => 'Fornecedores', 'menu_text' => 'Fornecedores', 'menu_url' => 'fornecedores', 'menu_route' => 'fornecedores', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'fornecedores', 'prefix_route' => 'fornecedores', 'viewing_order' => 100],
             ['id' => '23', 'modulo_id' => '2', 'name' => 'Usuários Perfil', 'menu_text' => 'Usuários Perfil', 'menu_url' => 'users_perfil', 'menu_route' => 'users_perfil', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'users_perfil', 'prefix_route' => 'users_perfil', 'viewing_order' => 0],
+            ['id' => '24', 'modulo_id' => '2', 'name' => 'Serviço Tipos', 'menu_text' => 'Serviço Tipos', 'menu_url' => 'servico_tipos', 'menu_route' => 'servico_tipos', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'servico_tipos', 'prefix_route' => 'servico_tipos', 'viewing_order' => 100],
+            ['id' => '25', 'modulo_id' => '2', 'name' => 'Serviços', 'menu_text' => 'Serviços', 'menu_url' => 'servicos', 'menu_route' => 'servicos', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'servicos', 'prefix_route' => 'servicos', 'viewing_order' => 100],
         ]);
     }
 }

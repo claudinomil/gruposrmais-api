@@ -5,18 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Banco extends Model
+class ContratacaoTipo extends Model
 {
     use HasFactory;
 
-    protected $table = 'bancos';
+    protected $table = 'contratacao_tipos';
 
     protected $fillable = [
         'name'
     ];
-
-    public function setServidorAttribute($value)
-    {
-        $this->attributes['servidor'] = mb_strtoupper($value);
-    }
 }

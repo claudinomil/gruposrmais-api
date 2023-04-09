@@ -15,14 +15,18 @@ class Funcionario extends Model
     protected $fillable = [
         'name',
         'data_nascimento',
+        'contratacao_tipo_id',
         'genero_id',
         'estado_civil_id',
         'escolaridade_id',
         'nacionalidade_id',
         'naturalidade_id',
         'email',
-        'father',
-        'mother',
+        'pai',
+        'mae',
+        'banco_id',
+        'agencia',
+        'conta',
         'telephone_1',
         'telephone_2',
         'cellular_1',
@@ -49,6 +53,8 @@ class Funcionario extends Model
         'funcao_id',
         'data_admissao',
         'data_demissao',
+        'data_cadastro',
+        'data_afastamento',
         'foto'
     ];
 
@@ -56,6 +62,8 @@ class Funcionario extends Model
         'data_nascimento',
         'data_admissao',
         'data_demissao',
+        'data_cadastro',
+        'data_afastamento',
         'personal_identidade_data_emissao',
         'professional_identidade_data_emissao'
     ];

@@ -5,14 +5,14 @@ namespace App\Http\Controllers;
 use App\API\ApiReturn;
 use App\Http\Requests\FuncionarioStoreRequest;
 use App\Http\Requests\FuncionarioUpdateRequest;
-use App\Models\FuncionarioAddress;
-use App\Models\FuncionarioTelephone;
 use App\Models\Genero;
+use App\Models\ContratacaoTipo;
 use App\Models\IdentidadeOrgao;
 use App\Models\EstadoCivil;
 use App\Models\Nacionalidade;
 use App\Models\Naturalidade;
 use App\Models\Funcao;
+use App\Models\Banco;
 use App\Models\Escolaridade;
 use App\Models\Estado;
 use Carbon\Carbon;
@@ -35,8 +35,10 @@ class FuncionarioController extends Controller
             ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
+            ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'estados_civis.name as estado_civilName'])
+            ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -68,6 +70,12 @@ class FuncionarioController extends Controller
 
             //Gêneros
             $registros['generos'] = Genero::all();
+
+            //Contratação Tipos
+            $registros['contratacao_tipos'] = ContratacaoTipo::all();
+
+            //Bancos
+            $registros['bancos'] = Banco::all();
 
             //Estados Civis
             $registros['estados_civis'] = EstadoCivil::all();
@@ -109,6 +117,8 @@ class FuncionarioController extends Controller
             if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
             if ($request['data_admissao'] != '') {$data['data_admissao'] = Carbon::createFromFormat('d/m/Y', $request['data_admissao'])->format('Y-m-d');}
             if ($request['data_demissao'] != '') {$data['data_demissao'] = Carbon::createFromFormat('d/m/Y', $request['data_demissao'])->format('Y-m-d');}
+            if ($request['data_cadastro'] != '') {$data['data_cadastro'] = Carbon::createFromFormat('d/m/Y', $request['data_cadastro'])->format('Y-m-d');}
+            if ($request['data_afastamento'] != '') {$data['data_afastamento'] = Carbon::createFromFormat('d/m/Y', $request['data_afastamento'])->format('Y-m-d');}
             if ($request['personal_identidade_data_emissao'] != '') {$data['personal_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['personal_identidade_data_emissao'])->format('Y-m-d');}
             if ($request['professional_identidade_data_emissao'] != '') {$data['professional_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['professional_identidade_data_emissao'])->format('Y-m-d');}
 
@@ -142,6 +152,8 @@ class FuncionarioController extends Controller
                 if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
                 if ($request['data_admissao'] != '') {$data['data_admissao'] = Carbon::createFromFormat('d/m/Y', $request['data_admissao'])->format('Y-m-d');}
                 if ($request['data_demissao'] != '') {$data['data_demissao'] = Carbon::createFromFormat('d/m/Y', $request['data_demissao'])->format('Y-m-d');}
+                if ($request['data_cadastro'] != '') {$data['data_cadastro'] = Carbon::createFromFormat('d/m/Y', $request['data_cadastro'])->format('Y-m-d');}
+                if ($request['data_afastamento'] != '') {$data['data_afastamento'] = Carbon::createFromFormat('d/m/Y', $request['data_afastamento'])->format('Y-m-d');}
                 if ($request['personal_identidade_data_emissao'] != '') {$data['personal_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['personal_identidade_data_emissao'])->format('Y-m-d');}
                 if ($request['professional_identidade_data_emissao'] != '') {$data['professional_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['professional_identidade_data_emissao'])->format('Y-m-d');}
 
@@ -169,10 +181,12 @@ class FuncionarioController extends Controller
                 ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
                 ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
                 ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
+                ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
                 ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
                 ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
                 ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
-                ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'escolaridades.name as escolaridadeName', 'funcoes.name as funcaoName', 'estados_civis.name as estado_civilName'])
+                ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
+                ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'escolaridades.name as escolaridadeName', 'funcoes.name as funcaoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
                 ->where('funcionarios.id', '=', $id)
                 ->get();
 
@@ -247,8 +261,10 @@ class FuncionarioController extends Controller
             ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
+            ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'estados_civis.name as estado_civilName'])
+            ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
@@ -261,8 +277,10 @@ class FuncionarioController extends Controller
             ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
+            ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'estados_civis.name as estado_civilName'])
+            ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
             ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
             ->get($fieldReturn);
 

@@ -73,3 +73,9 @@ require __DIR__.'/routes_dashboards.php';
 
 //Fornecedores
 require __DIR__.'/routes_fornecedores.php';
+
+//Servicos Tipos
+require __DIR__.'/routes_servico_tipos.php';
+
+//Servicos
+require __DIR__.'/routes_servicos.php';

@@ -18,6 +18,8 @@ use App\Models\Notificacao;
 use App\Models\Operacao;
 use App\Models\Funcao;
 use App\Models\Escolaridade;
+use App\Models\Servico;
+use App\Models\ServicoTipo;
 use App\Models\Situacao;
 use App\Models\Submodulo;
 use App\Models\Ferramenta;
@@ -38,6 +40,8 @@ use App\Observers\NotificacaoObserver;
 use App\Observers\OperacaoObserver;
 use App\Observers\FuncaoObserver;
 use App\Observers\EscolaridadeObserver;
+use App\Observers\ServicoObserver;
+use App\Observers\ServicoTipoObserver;
 use App\Observers\SituacaoObserver;
 use App\Observers\SubmoduloObserver;
 use App\Observers\FerramentaObserver;
@@ -58,24 +62,26 @@ class EventServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Banco::observe(BancoObserver::class);
-        Departamento::observe(DepartamentoObserver::class);
-        Funcionario::observe(FuncionarioObserver::class);
         Cliente::observe(ClienteObserver::class);
+        Departamento::observe(DepartamentoObserver::class);
+        Escolaridade::observe(EscolaridadeObserver::class);
+        EstadoCivil::observe(EstadoCivilObserver::class);
+        Ferramenta::observe(FerramentaObserver::class);
         Fornecedor::observe(FornecedorObserver::class);
+        Funcao::observe(FuncaoObserver::class);
+        Funcionario::observe(FuncionarioObserver::class);
         Genero::observe(GeneroObserver::class);
         Grupo::observe(GrupoObserver::class);
         IdentidadeOrgao::observe(IdentidadeOrgaoObserver::class);
-        EstadoCivil::observe(EstadoCivilObserver::class);
         Modulo::observe(ModuloObserver::class);
         Nacionalidade::observe(NacionalidadeObserver::class);
         Naturalidade::observe(NaturalidadeObserver::class);
         Notificacao::observe(NotificacaoObserver::class);
         Operacao::observe(OperacaoObserver::class);
-        Funcao::observe(FuncaoObserver::class);
-        Escolaridade::observe(EscolaridadeObserver::class);
+        Servico::observe(ServicoObserver::class);
+        ServicoTipo::observe(ServicoTipoObserver::class);
         Situacao::observe(SituacaoObserver::class);
         Submodulo::observe(SubmoduloObserver::class);
-        Ferramenta::observe(FerramentaObserver::class);
         User::observe(UserObserver::class);
     }
 

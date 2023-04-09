@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Banco;
+use App\Models\Cliente;
+use App\Models\ContratacaoTipo;
 use App\Models\Funcionario;
 use App\Models\Genero;
 use App\Models\Grupo;
@@ -13,6 +15,7 @@ use App\Models\Nacionalidade;
 use App\Models\Naturalidade;
 use App\Models\Funcao;
 use App\Models\Escolaridade;
+use App\Models\ServicoTipo;
 use App\Models\Situacao;
 use App\Models\Estado;
 use App\Models\Transacao;
@@ -501,6 +504,18 @@ class Transacoes
                 }
                 $dados .= $x . "Data Nascimento: " . $y . $laterData['data_nascimento'] . "<br>";
 
+                if ($beforeData['contratacao_tipo_id'] != $laterData['contratacao_tipo_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['contratacao_tipo_id'] != "") and ($laterData['contratacao_tipo_id'] != 0)) {
+                    $search = ContratacaoTipo::where('id', $laterData['contratacao_tipo_id'])->get(['name']);
+                    $dados .= $x . "Tipo Contratação: " . $y . $search[0]['name'] . "<br>";
+                }
+
                 if ($beforeData['genero_id'] != $laterData['genero_id']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
@@ -561,23 +576,53 @@ class Transacoes
                     $dados .= $x . "Naturalidade: " . $y . $search[0]['name'] . "<br>";
                 }
 
-                if ($beforeData['father'] != $laterData['father']) {
+                if ($beforeData['pai'] != $laterData['pai']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Pai: " . $y . $laterData['father'] . "<br>";
+                $dados .= $x . "Pai: " . $y . $laterData['pai'] . "<br>";
 
-                if ($beforeData['mother'] != $laterData['mother']) {
+                if ($beforeData['mae'] != $laterData['mae']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Mãe: " . $y . $laterData['mother'] . "<br>";
+                $dados .= $x . "Mãe: " . $y . $laterData['mae'] . "<br>";
+
+                if ($beforeData['banco_id'] != $laterData['banco_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['banco_id'] != "") and ($laterData['banco_id'] != 0)) {
+                    $search = Banco::where('id', $laterData['banco_id'])->get(['name']);
+                    $dados .= $x . "Banco: " . $y . $search[0]['name'] . "<br>";
+                }
+
+                if ($beforeData['agencia'] != $laterData['agencia']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Agência: " . $y . $laterData['agencia'] . "<br>";
+
+                if ($beforeData['conta'] != $laterData['conta']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Conta: " . $y . $laterData['conta'] . "<br>";
 
                 if ($beforeData['email'] != $laterData['email']) {
                     $x = "<font class='text-danger'>";
@@ -653,6 +698,24 @@ class Transacoes
                     $y = "";
                 }
                 $dados .= $x . "Data Demissão: " . $y . $laterData['data_demissao'] . "<br>";
+
+                if ($beforeData['data_cadastro'] != $laterData['data_cadastro']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Data Cadastro: " . $y . $laterData['data_cadastro'] . "<br>";
+
+                if ($beforeData['data_afastamento'] != $laterData['data_afastamento']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Data Afastamento: " . $y . $laterData['data_afastamento'] . "<br>";
 
                 if ($beforeData['personal_identidade_orgao_id'] != $laterData['personal_identidade_orgao_id']) {
                     $x = "<font class='text-danger'>";
@@ -861,6 +924,30 @@ class Transacoes
 
             //clientes
             if ($submodulo_id == 20) {
+                if ($beforeData['principal_cliente_id'] != $laterData['principal_cliente_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['principal_cliente_id'] != "") and ($laterData['principal_cliente_id'] != 0)) {
+                    $search = Cliente::where('id', $laterData['principal_cliente_id'])->get(['name']);
+                    $dados .= $x . "Cliente Principal: " . $y . $search[0]['name'] . "<br>";
+                }
+
+                if ($beforeData['responsavel_funcionario_id'] != $laterData['responsavel_funcionario_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['responsavel_funcionario_id'] != "") and ($laterData['responsavel_funcionario_id'] != 0)) {
+                    $search = Funcionario::where('id', $laterData['responsavel_funcionario_id'])->get(['name']);
+                    $dados .= $x . "Responsável: " . $y . $search[0]['name'] . "<br>";
+                }
+
                 if ($beforeData['status'] != $laterData['status']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
@@ -1553,6 +1640,42 @@ class Transacoes
                     $y = "";
                 }
                 $dados .= $x . "Celular 2: " . $y . $laterData['celular_2'] . "<br>";
+            }
+
+            //Serviço Tipos
+            if ($submodulo_id == 24) {
+                if ($beforeData['name'] != $laterData['name']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
+            }
+
+            //Serviços
+            if ($submodulo_id == 25) {
+                if ($beforeData['name'] != $laterData['name']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
+
+                if ($beforeData['servico_tipo_id'] != $laterData['servico_tipo_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['servico_tipo_id'] != "") and ($laterData['servico_tipo_id'] != 0)) {
+                    $search = ServicoTipo::where('id', $laterData['servico_tipo_id'])->get(['name']);
+                    $dados .= $x . "Serviço Tipo: " . $y . $search[0]['name'] . "<br>";
+                }
             }
 
             //gravar transacao'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

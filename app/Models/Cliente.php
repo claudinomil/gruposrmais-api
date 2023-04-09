@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 class Cliente extends Model
 {
@@ -13,6 +12,8 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
+        'principal_cliente_id',
+        'responsavel_funcionario_id',
         'status',
         'tipo',
         'name',

@@ -147,5 +147,17 @@ class PermissoesSeeder extends Seeder
 
         Permissao::create(['submodulo_id' => 23, 'name' => 'users_perfil_show', 'description' => 'Visualizar Registro - Usuários Perfil']);
         Permissao::create(['submodulo_id' => 23, 'name' => 'users_perfil_edit', 'description' => 'Editar Registro - Usuários Perfil']);
+
+        Permissao::create(['submodulo_id' => 24, 'name' => 'servico_tipos_list', 'description' => 'Visualizar Registro - Serviço Tipos']);
+        Permissao::create(['submodulo_id' => 24, 'name' => 'servico_tipos_create', 'description' => 'Criar Registro - Serviço Tipos']);
+        Permissao::create(['submodulo_id' => 24, 'name' => 'servico_tipos_show', 'description' => 'Visualizar Registro - Serviço Tipos']);
+        Permissao::create(['submodulo_id' => 24, 'name' => 'servico_tipos_edit', 'description' => 'Editar Registro - Serviço Tipos']);
+        Permissao::create(['submodulo_id' => 24, 'name' => 'servico_tipos_destroy', 'description' => 'Deletar Registro - Serviço Tipos']);
+
+        Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_list', 'description' => 'Visualizar Registro - Serviços']);
+        Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_create', 'description' => 'Criar Registro - Serviços']);
+        Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_show', 'description' => 'Visualizar Registro - Serviços']);
+        Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_edit', 'description' => 'Editar Registro - Serviços']);
+        Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_destroy', 'description' => 'Deletar Registro - Serviços']);
     }
 }
