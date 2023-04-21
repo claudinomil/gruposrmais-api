@@ -17,6 +17,7 @@ class CreateServicosTable extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('servico_tipo_id')->nullable()->constrained('servico_tipos');
+            $table->decimal('valor');
             $table->timestamps();
         });
     }

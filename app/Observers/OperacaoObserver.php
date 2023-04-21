@@ -25,7 +25,6 @@ class OperacaoObserver
     public function deleted(Operacao $operacao)
     {
         //gravar transacao
-        Transacoes::
-        transacaoRecord(3, 'operacoes', $operacao, $operacao);
+        Transacoes::transacaoRecord(3, 'operacoes', $operacao, $operacao);
     }
 }

@@ -159,5 +159,11 @@ class PermissoesSeeder extends Seeder
         Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_show', 'description' => 'Visualizar Registro - Serviços']);
         Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_edit', 'description' => 'Editar Registro - Serviços']);
         Permissao::create(['submodulo_id' => 25, 'name' => 'servicos_destroy', 'description' => 'Deletar Registro - Serviços']);
+
+        Permissao::create(['submodulo_id' => 26, 'name' => 'propostas_list', 'description' => 'Visualizar Registro - Propostas']);
+        Permissao::create(['submodulo_id' => 26, 'name' => 'propostas_create', 'description' => 'Criar Registro - Propostas']);
+        Permissao::create(['submodulo_id' => 26, 'name' => 'propostas_show', 'description' => 'Visualizar Registro - Propostas']);
+        Permissao::create(['submodulo_id' => 26, 'name' => 'propostas_edit', 'description' => 'Editar Registro - Propostas']);
+        Permissao::create(['submodulo_id' => 26, 'name' => 'propostas_destroy', 'description' => 'Deletar Registro - Propostas']);
     }
 }

@@ -1678,6 +1678,21 @@ class Transacoes
                 }
             }
 
+            //Propostas
+            if ($submodulo_id == 26) {
+                if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['cliente_id'] != "") and ($laterData['cliente_id'] != 0)) {
+                    $search = Cliente::where('id', $laterData['cliente_id'])->get(['name']);
+                    $dados .= $x . "Cliente: " . $y . $search[0]['name'] . "<br>";
+                }
+            }
+
             //gravar transacao'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             if ($dados != '') {
                 $trasaction = Array();

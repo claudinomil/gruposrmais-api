@@ -68,6 +68,16 @@ class ServicoController extends Controller
     public function store(ServicoStoreRequest $request)
     {
         try {
+            //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            $valor = $request['valor'];
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace('.', '', $valor);
+            $valor = str_replace(',', '.', $valor);
+
+            $request['valor'] = $valor;
+            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
             //Incluindo registro
             $this->servico->create($request->all());
 
@@ -89,6 +99,16 @@ class ServicoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                $valor = $request['valor'];
+                $valor = str_replace('.', '', $valor);
+                $valor = str_replace('.', '', $valor);
+                $valor = str_replace('.', '', $valor);
+                $valor = str_replace(',', '.', $valor);
+
+                $request['valor'] = $valor;
+                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
                 $registro->update($request->all());
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);

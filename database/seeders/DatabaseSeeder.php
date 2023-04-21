@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             GenerosSeeder::class,
             ContratacaoTiposSeeder::class,
             ServicoTiposSeeder::class,
+            ServicosSeeder::class,
             EstadosCivisSeeder::class,
             IdentidadeOrgaosSeeder::class,
             NacionalidadesSeeder::class,
@@ -28,6 +29,7 @@ class DatabaseSeeder extends Seeder
             OperacoesSeeder::class,
             EstadosSeeder::class,
             UsersSeeder::class,
+            ClientesSeeder::class,
         ]);
     }
 }

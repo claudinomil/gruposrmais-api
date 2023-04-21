@@ -27,6 +27,7 @@ class ServicoUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'min:3'],
             'servico_tipo_id' => ['required', 'integer', 'numeric'],
+            'valor' => ['required'],
         ];
     }
 
@@ -37,6 +38,7 @@ class ServicoUpdateRequest extends FormRequest
             'name.min' => 'O Nome deve ter pelo menos 3 caracteres.',
             'servico_tipo_id.required' => 'O Serviço Tipo é requerido.',
             'servico_tipo_id.integer' => 'O Serviço Tipo deve ser um ítem da lista.',
+            'valor.required' => 'O Valor é requerido.',
         ];
     }
 }

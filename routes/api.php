@@ -79,3 +79,6 @@ require __DIR__.'/routes_servico_tipos.php';
 
 //Servicos
 require __DIR__.'/routes_servicos.php';
+
+//Propostas
+require __DIR__.'/routes_propostas.php';

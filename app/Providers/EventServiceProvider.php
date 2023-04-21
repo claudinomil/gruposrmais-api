@@ -18,6 +18,7 @@ use App\Models\Notificacao;
 use App\Models\Operacao;
 use App\Models\Funcao;
 use App\Models\Escolaridade;
+use App\Models\Proposta;
 use App\Models\Servico;
 use App\Models\ServicoTipo;
 use App\Models\Situacao;
@@ -40,6 +41,7 @@ use App\Observers\NotificacaoObserver;
 use App\Observers\OperacaoObserver;
 use App\Observers\FuncaoObserver;
 use App\Observers\EscolaridadeObserver;
+use App\Observers\PropostaObserver;
 use App\Observers\ServicoObserver;
 use App\Observers\ServicoTipoObserver;
 use App\Observers\SituacaoObserver;
@@ -83,6 +85,7 @@ class EventServiceProvider extends ServiceProvider
         Situacao::observe(SituacaoObserver::class);
         Submodulo::observe(SubmoduloObserver::class);
         User::observe(UserObserver::class);
+        Proposta::observe(PropostaObserver::class);
     }
 
     public function shouldDiscoverEvents()

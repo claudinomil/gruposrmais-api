@@ -14,5 +14,6 @@ class Servico extends Model
     protected $fillable = [
         'name',
         'servico_tipo_id',
+        'valor'
     ];
 }
