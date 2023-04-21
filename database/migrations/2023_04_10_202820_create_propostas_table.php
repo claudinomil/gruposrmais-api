@@ -14,6 +14,7 @@ class CreatePropostasTable extends Migration
             $table->date('data_proposta')->nullable();
             $table->string('data_proposta_extenso')->nullable();
             $table->integer('numero_proposta')->nullable();
+            $table->integer('ano_proposta')->nullable();
 
             //INFORMAÇÕES CLIENTE (A ESQUERDA DA PROPOSTA)
             $table->string('cliente_nome')->nullable();

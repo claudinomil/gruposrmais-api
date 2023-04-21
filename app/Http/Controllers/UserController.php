@@ -91,7 +91,7 @@ class UserController extends Controller
             $data['avatar'] = 'build/assets/images/users/avatar-0.png';
 
             //grava uma senha provisoria (usuário tem que redefinir)
-            $data['password'] = Hash::make('claudino1971');
+            $data['password'] = Hash::make('12345678');
 
             //Incluindo registro
             $this->user->create($data);
