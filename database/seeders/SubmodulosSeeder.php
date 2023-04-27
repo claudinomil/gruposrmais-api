@@ -37,6 +37,13 @@ class SubmodulosSeeder extends Seeder
             ['id' => '25', 'modulo_id' => '2', 'name' => 'Serviços', 'menu_text' => 'Serviços', 'menu_url' => 'servicos', 'menu_route' => 'servicos', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'servicos', 'prefix_route' => 'servicos', 'viewing_order' => 80],
             ['id' => '26', 'modulo_id' => '2', 'name' => 'Propostas', 'menu_text' => 'Propostas', 'menu_url' => 'propostas', 'menu_route' => 'propostas', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'propostas', 'prefix_route' => 'propostas', 'viewing_order' => 90],
             ['id' => '27', 'modulo_id' => '2', 'name' => 'Visitas Técnicas', 'menu_text' => 'Visitas Técnicas', 'menu_url' => 'visitas_tecnicas', 'menu_route' => 'visitas_tecnicas', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'visitas_tecnicas', 'prefix_route' => 'visitas_tecnicas', 'viewing_order' => 110],
+
+
+
+
+            ['id' => '200', 'modulo_id' => '2', 'name' => 'Mobile', 'menu_text' => 'Mobile', 'menu_url' => 'mobile', 'menu_route' => 'mobile', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'mobile', 'prefix_route' => 'mobile', 'viewing_order' => 0],
+            ['id' => '201', 'modulo_id' => '2', 'name' => 'Meus Clientes', 'menu_text' => 'Meus Clientes', 'menu_url' => 'mobile_clientes', 'menu_route' => 'mobile_clientes', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'mobile_clientes', 'prefix_route' => 'mobile_clientes', 'viewing_order' => 0],
+            ['id' => '202', 'modulo_id' => '2', 'name' => 'Minhas Visitas Técnicas', 'menu_text' => 'Minhas Visitas Técnicas', 'menu_url' => 'mobile_visitas_tecnicas', 'menu_route' => 'mobile_visitas_tecnicas', 'menu_icon' => 'fas fa-angle-right', 'prefix_permissao' => 'mobile_visitas_tecnicas', 'prefix_route' => 'mobile_visitas_tecnicas', 'viewing_order' => 0],
         ]);
     }
 }
