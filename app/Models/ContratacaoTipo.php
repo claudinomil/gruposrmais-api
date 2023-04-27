@@ -14,4 +14,6 @@ class ContratacaoTipo extends Model
     protected $fillable = [
         'name'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
 }

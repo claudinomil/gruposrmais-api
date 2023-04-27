@@ -27,10 +27,10 @@ class Funcionario extends Model
         'banco_id',
         'agencia',
         'conta',
-        'telephone_1',
-        'telephone_2',
-        'cellular_1',
-        'cellular_2',
+        'telefone_1',
+        'telefone_2',
+        'celular_1',
+        'celular_2',
         'personal_identidade_estado_id',
         'personal_identidade_orgao_id',
         'personal_identidade_numero',
@@ -67,4 +67,23 @@ class Funcionario extends Model
         'personal_identidade_data_emissao',
         'professional_identidade_data_emissao'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setEmailAttribute($value) {$this->attributes['email'] = mb_strtolower($value);}
+    public function setPaiAttribute($value) {$this->attributes['pai'] = mb_strtoupper($value);}
+    public function setMaeAttribute($value) {$this->attributes['mae'] = mb_strtoupper($value);}
+    public function setComplementoAttribute($value) {$this->attributes['complemento'] = mb_strtoupper($value);}
+    public function setLogradouroAttribute($value) {$this->attributes['logradouro'] = mb_strtoupper($value);}
+    public function setBairroAttribute($value) {$this->attributes['bairro'] = mb_strtoupper($value);}
+    public function setLocalidadeAttribute($value) {$this->attributes['localidade'] = mb_strtoupper($value);}
+    public function setUfAttribute($value) {$this->attributes['uf'] = mb_strtoupper($value);}
+    public function setFotoAttribute($value) {$this->attributes['foto'] = mb_strtolower($value);}
+
+    public function setPersonalIdentidadeDataEmissaoAttribute($value) {if ($value != '') {$this->attributes['personal_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setProfessionalIdentidadeDataEmissaoAttribute($value) {if ($value != '') {$this->attributes['professional_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setDataNascimentoAttribute($value) {if ($value != '') {$this->attributes['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setDataAdmissaoAttribute($value) {if ($value != '') {$this->attributes['data_admissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setDataDemissaoAttribute($value) {if ($value != '') {$this->attributes['data_demissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setDataCadastroAttribute($value) {if ($value != '') {$this->attributes['data_cadastro'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    public function setDataAfastamentoAttribute($value) {if ($value != '') {$this->attributes['data_afastamento'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
 }

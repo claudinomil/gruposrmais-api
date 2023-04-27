@@ -7,7 +7,7 @@ use App\Http\Requests\FornecedorStoreRequest;
 use App\Http\Requests\FornecedorUpdateRequest;
 use App\Models\Banco;
 //use App\Models\FornecedorAddress;
-//use App\Models\FornecedorTelephone;
+//use App\Models\FornecedorTelefone;
 use App\Models\Genero;
 use App\Models\IdentidadeOrgao;
 use App\Models\EstadoCivil;
@@ -92,17 +92,8 @@ class FornecedorController extends Controller
     public function store(FornecedorStoreRequest $request)
     {
         try {
-            //Preparando request
-            $data = $request->all();
-
-            if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-            if ($request['identidade_data_emissao'] != '') {$data['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['identidade_data_emissao'])->format('Y-m-d');}
-
-            //Campo foto
-            $data['foto'] = 'build/assets/images/fornecedores/fornecedor-0.png';
-
             //Incluindo registro
-            $this->fornecedor->create($data);
+            $this->fornecedor->create($request->all());
 
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
@@ -122,14 +113,8 @@ class FornecedorController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request
-                $data = $request->all();
-
-                if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-                if ($request['identidade_data_emissao'] != '') {$data['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['identidade_data_emissao'])->format('Y-m-d');}
-
                 //Alterando registro
-                $registro->update($data);
+                $registro->update($request->all());
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }

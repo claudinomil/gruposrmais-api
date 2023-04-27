@@ -15,4 +15,7 @@ class Estado extends Model
         'name',
         'uf'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setUfAttribute($value) {$this->attributes['uf'] = mb_strtoupper($value);}
 }

@@ -82,3 +82,6 @@ require __DIR__.'/routes_servicos.php';
 
 //Propostas
 require __DIR__.'/routes_propostas.php';
+
+//Visitas Técnicas
+require __DIR__.'/routes_visitas_tecnicas.php';

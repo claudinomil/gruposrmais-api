@@ -19,4 +19,8 @@ class Ferramenta extends Model
         'viewing_order',
         'user_id'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setUrlAttribute($value) {$this->attributes['url'] = mb_strtoupper($value);}
+    public function setIconAttribute($value) {$this->attributes['icon'] = mb_strtoupper($value);}
 }

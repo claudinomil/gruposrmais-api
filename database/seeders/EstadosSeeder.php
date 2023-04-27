@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Estado;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,34 +10,32 @@ class EstadosSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('estados')->insert([
-            ['name' => 'Acre', 'uf' => 'AC'],
-            ['name' => 'Alagoas', 'uf' => 'AL'],
-            ['name' => 'Amapá', 'uf' => 'AP'],
-            ['name' => 'Amazonas', 'uf' => 'AM'],
-            ['name' => 'Bahia', 'uf' => 'BA'],
-            ['name' => 'Ceará', 'uf' => 'CE'],
-            ['name' => 'Distrito Federal', 'uf' => 'DF'],
-            ['name' => 'Espírito Santo', 'uf' => 'ES'],
-            ['name' => 'Goiás', 'uf' => 'GO'],
-            ['name' => 'Maranhão', 'uf' => 'MA'],
-            ['name' => 'Mato Grosso', 'uf' => 'MT'],
-            ['name' => 'Mato Grosso do Sul', 'uf' => 'MS'],
-            ['name' => 'Minas Gerais', 'uf' => 'MG'],
-            ['name' => 'Pará', 'uf' => 'PA'],
-            ['name' => 'Paraíba', 'uf' => 'PB'],
-            ['name' => 'Paraná', 'uf' => 'PR'],
-            ['name' => 'Pernambuco', 'uf' => 'PE'],
-            ['name' => 'Piauí', 'uf' => 'PI'],
-            ['name' => 'Rio de Janeiro', 'uf' => 'RJ'],
-            ['name' => 'Rio Grande do Norte', 'uf' => 'RN'],
-            ['name' => 'Rio Grande do Sul', 'uf' => 'RS'],
-            ['name' => 'Rondônia', 'uf' => 'RO'],
-            ['name' => 'Roraima', 'uf' => 'RR'],
-            ['name' => 'Santa Catarina', 'uf' => 'SC'],
-            ['name' => 'São Paulo', 'uf' => 'SP'],
-            ['name' => 'Sergipe', 'uf' => 'SE'],
-            ['name' => 'Tocantins', 'uf' => 'TO'],
-        ]);
+        Estado::create(['name' => 'Acre', 'uf' => 'AC']);
+        Estado::create(['name' => 'Alagoas', 'uf' => 'AL']);
+        Estado::create(['name' => 'Amapá', 'uf' => 'AP']);
+        Estado::create(['name' => 'Amazonas', 'uf' => 'AM']);
+        Estado::create(['name' => 'Bahia', 'uf' => 'BA']);
+        Estado::create(['name' => 'Ceará', 'uf' => 'CE']);
+        Estado::create(['name' => 'Distrito Federal', 'uf' => 'DF']);
+        Estado::create(['name' => 'Espírito Santo', 'uf' => 'ES']);
+        Estado::create(['name' => 'Goiás', 'uf' => 'GO']);
+        Estado::create(['name' => 'Maranhão', 'uf' => 'MA']);
+        Estado::create(['name' => 'Mato Grosso', 'uf' => 'MT']);
+        Estado::create(['name' => 'Mato Grosso do Sul', 'uf' => 'MS']);
+        Estado::create(['name' => 'Minas Gerais', 'uf' => 'MG']);
+        Estado::create(['name' => 'Pará', 'uf' => 'PA']);
+        Estado::create(['name' => 'Paraíba', 'uf' => 'PB']);
+        Estado::create(['name' => 'Paraná', 'uf' => 'PR']);
+        Estado::create(['name' => 'Pernambuco', 'uf' => 'PE']);
+        Estado::create(['name' => 'Piauí', 'uf' => 'PI']);
+        Estado::create(['name' => 'Rio de Janeiro', 'uf' => 'RJ']);
+        Estado::create(['name' => 'Rio Grande do Norte', 'uf' => 'RN']);
+        Estado::create(['name' => 'Rio Grande do Sul', 'uf' => 'RS']);
+        Estado::create(['name' => 'Rondônia', 'uf' => 'RO']);
+        Estado::create(['name' => 'Roraima', 'uf' => 'RR']);
+        Estado::create(['name' => 'Santa Catarina', 'uf' => 'SC']);
+        Estado::create(['name' => 'São Paulo', 'uf' => 'SP']);
+        Estado::create(['name' => 'Sergipe', 'uf' => 'SE']);
+        Estado::create(['name' => 'Tocantins', 'uf' => 'TO']);
     }
 }

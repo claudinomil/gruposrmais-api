@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Situacao;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,7 @@ class SituacoesSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('situacoes')->insert([
-            ['name' => 'Liberado', 'bg_badge' => 'success'],
-            ['name' => 'Bloqueado', 'bg_badge' => 'danger'],
-        ]);
+        Situacao::create(['name' => 'Liberado', 'bg_badge' => 'success']);
+        Situacao::create(['name' => 'Bloqueado', 'bg_badge' => 'danger']);
     }
 }

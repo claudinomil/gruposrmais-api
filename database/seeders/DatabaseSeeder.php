@@ -20,16 +20,19 @@ class DatabaseSeeder extends Seeder
             NacionalidadesSeeder::class,
             NaturalidadesSeeder::class,
             EscolaridadesSeeder::class,
-            TelephoneDddsSeeder::class,
-            TelephoneDdisSeeder::class,
+            TelefoneDddsSeeder::class,
+            TelefoneDdisSeeder::class,
             GruposSeeder::class,
+            IconsSeeder::class,
             PermissoesSeeder::class,
             GrupoPermissoesSeeder::class,
             SituacoesSeeder::class,
             OperacoesSeeder::class,
             EstadosSeeder::class,
             UsersSeeder::class,
-            ClientesSeeder::class,
+            SegurancaMedidasSeeder::class,
+            EdificacaoClassificacoesSeeder::class,
+            IncendioRiscosSeeder::class,
         ]);
     }
 }

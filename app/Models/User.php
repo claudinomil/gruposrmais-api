@@ -35,4 +35,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setEmailAttribute($value) {$this->attributes['email'] = mb_strtolower($value);}
+    public function setAvatarAttribute($value) {$this->attributes['avatar'] = mb_strtolower($value);}
 }

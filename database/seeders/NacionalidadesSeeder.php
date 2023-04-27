@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Nacionalidade;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,118 +10,116 @@ class NacionalidadesSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('nacionalidades')->insert([
-            ['nation' => 'Antígua e Barbuda', 'name' => 'Antiguano'],
-            ['nation' => 'Argentina', 'name' => 'Argentino'],
-            ['nation' => 'Bahamas', 'name' => 'Bahamense'],
-            ['nation' => 'Barbados', 'name' => 'Barbadiano, barbadense'],
-            ['nation' => 'Belize', 'name' => 'Belizenho'],
-            ['nation' => 'Bolívia', 'name' => 'Boliviano'],
-            ['nation' => 'Brasil', 'name' => 'Brasileiro'],
-            ['nation' => 'Chile', 'name' => 'Chileno'],
-            ['nation' => 'Colômbia', 'name' => 'Colombiano'],
-            ['nation' => 'Costa Rica', 'name' => 'Costarriquenho'],
-            ['nation' => 'Cuba', 'name' => 'Cubano'],
-            ['nation' => 'Dominica', 'name' => 'Dominicano'],
-            ['nation' => 'Equador', 'name' => 'Equatoriano'],
-            ['nation' => 'El Salvador', 'name' => 'Salvadorenho'],
-            ['nation' => 'Granada', 'name' => 'Granadino'],
-            ['nation' => 'Guatemala', 'name' => 'Guatemalteco'],
-            ['nation' => 'Guiana', 'name' => 'Guianês'],
-            ['nation' => 'Guiana Francesa', 'name' => 'Guianense'],
-            ['nation' => 'Haiti', 'name' => 'Haitiano'],
-            ['nation' => 'Honduras', 'name' => 'Hondurenho'],
-            ['nation' => 'Jamaica', 'name' => 'Jamaicano'],
-            ['nation' => 'México', 'name' => 'Mexicano'],
-            ['nation' => 'Nicarágua', 'name' => 'Nicaraguense'],
-            ['nation' => 'Panamá', 'name' => 'Panamenho'],
-            ['nation' => 'Paraguai', 'name' => 'Paraguaio'],
-            ['nation' => 'Peru', 'name' => 'Peruano'],
-            ['nation' => 'Porto Rico', 'name' => 'Portorriquenho'],
-            ['nation' => 'República Dominicana', 'name' => 'Dominicana'],
-            ['nation' => 'São Cristóvão e Nevis', 'name' => 'São-cristovense'],
-            ['nation' => 'São Vicente e Granadinas', 'name' => 'São-vicentino'],
-            ['nation' => 'Santa Lúcia', 'name' => 'Santa-lucense'],
-            ['nation' => 'Suriname', 'name' => 'Surinamês'],
-            ['nation' => 'Trinidad e Tobago', 'name' => 'Trindadense'],
-            ['nation' => 'Uruguai', 'name' => 'Uruguaio'],
-            ['nation' => 'Venezuela', 'name' => 'Venezuelano'],
-            ['nation' => 'Alemanha', 'name' => 'Alemão'],
-            ['nation' => 'Áustria', 'name' => 'Austríaco'],
-            ['nation' => 'Bélgica', 'name' => 'Belga'],
-            ['nation' => 'Croácia', 'name' => 'Croata'],
-            ['nation' => 'Dinamarca', 'name' => 'Dinamarquês'],
-            ['nation' => 'Eslováquia', 'name' => 'Eslovaco'],
-            ['nation' => 'Eslovênia', 'name' => 'Esloveno'],
-            ['nation' => 'Espanha', 'name' => 'Espanhol'],
-            ['nation' => 'França', 'name' => 'Francês'],
-            ['nation' => 'Grécia', 'name' => 'Grego'],
-            ['nation' => 'Hungria', 'name' => 'Húngaro'],
-            ['nation' => 'Irlanda', 'name' => 'Irlandês'],
-            ['nation' => 'Itália', 'name' => 'Italiano'],
-            ['nation' => 'Noruega', 'name' => 'Noruego'],
-            ['nation' => 'Países Baixos', 'name' => 'Holandês'],
-            ['nation' => 'Polônia', 'name' => 'Polonês'],
-            ['nation' => 'Portugal', 'name' => 'Português'],
-            ['nation' => 'Reino Unido', 'name' => 'Britânico'],
-            ['nation' => 'Inglaterra', 'name' => 'Inglês'],
-            ['nation' => 'País de Gales', 'name' => 'Galês'],
-            ['nation' => 'Escócia', 'name' => 'Escocês'],
-            ['nation' => 'Romênia', 'name' => 'Romeno'],
-            ['nation' => 'Rússia', 'name' => 'Russo'],
-            ['nation' => 'Sérvio', 'name' => 'Sérvio'],
-            ['nation' => 'Suécia', 'name' => 'Sueco'],
-            ['nation' => 'Suíça', 'name' => 'Suíço'],
-            ['nation' => 'Turquia', 'name' => 'Turco'],
-            ['nation' => 'Ucrânia', 'name' => 'Ucraniano'],
-            ['nation' => 'Estados Unidos', 'name' => 'Americano'],
-            ['nation' => 'Canadá', 'name' => 'Canadense'],
-            ['nation' => 'Angola', 'name' => 'Angolano'],
-            ['nation' => 'Moçambique', 'name' => 'Moçambicano'],
-            ['nation' => 'África do Sul', 'name' => 'Sul-africano'],
-            ['nation' => 'Zimbabue', 'name' => 'Zimbabuense'],
-            ['nation' => 'Argélia', 'name' => 'Argélia'],
-            ['nation' => 'Comores', 'name' => 'Comorense'],
-            ['nation' => 'Egito', 'name' => 'Egípcio'],
-            ['nation' => 'Líbia', 'name' => 'Líbio'],
-            ['nation' => 'Marrocos', 'name' => 'Marroquino'],
-            ['nation' => 'Gana', 'name' => 'Ganés'],
-            ['nation' => 'Quênia', 'name' => 'Queniano'],
-            ['nation' => 'Ruanda', 'name' => 'Ruandês'],
-            ['nation' => 'Uganda', 'name' => 'Ugandense'],
-            ['nation' => 'Botsuana', 'name' => 'Bechuano'],
-            ['nation' => 'Costa do Marfim', 'name' => 'Marfinense'],
-            ['nation' => 'Camarões', 'name' => 'Camaronense'],
-            ['nation' => 'Nigéria', 'name' => 'Nigeriano'],
-            ['nation' => 'Somália', 'name' => 'Somali'],
-            ['nation' => 'Austrália', 'name' => 'Australiano'],
-            ['nation' => 'Nova Zelândia', 'name' => 'Neozelandês'],
-            ['nation' => 'Afeganistão', 'name' => 'Afegão'],
-            ['nation' => 'Arábia Saudita', 'name' => 'Saudita'],
-            ['nation' => 'Armênia', 'name' => 'Armeno'],
-            ['nation' => 'Armeno', 'name' => 'Bangladesh'],
-            ['nation' => 'China', 'name' => 'Chinês'],
-            ['nation' => 'Coréia do Norte', 'name' => 'Norte-coreano, coreano'],
-            ['nation' => 'Coréia do Sul', 'name' => 'Sul-coreano, coreano'],
-            ['nation' => 'Índia', 'name' => 'Indiano'],
-            ['nation' => 'Indonésia', 'name' => 'Indonésio'],
-            ['nation' => 'Iraque', 'name' => 'Iraquiano'],
-            ['nation' => 'Irã', 'name' => 'Iraniano'],
-            ['nation' => 'Israel', 'name' => 'Israelita'],
-            ['nation' => 'Japão', 'name' => 'Japonês'],
-            ['nation' => 'Malásia', 'name' => 'Malaio'],
-            ['nation' => 'Nepal', 'name' => 'Nepalês'],
-            ['nation' => 'Omã', 'name' => 'Omanense'],
-            ['nation' => 'Paquistão', 'name' => 'Paquistanês'],
-            ['nation' => 'Palestina', 'name' => 'Palestino'],
-            ['nation' => 'Qatar', 'name' => 'Qatarense'],
-            ['nation' => 'Síria', 'name' => 'Sírio'],
-            ['nation' => 'Sri Lanka', 'name' => 'Cingalês'],
-            ['nation' => 'Tailândia', 'name' => 'Tailandês'],
-            ['nation' => 'Timor-Leste', 'name' => 'Timorense, maubere'],
-            ['nation' => 'Emirados Árabes Unidos', 'name' => 'Árabe, emiratense'],
-            ['nation' => 'Vietnã', 'name' => 'Vietnamita'],
-            ['nation' => 'Iêmen', 'name' => 'Iemenita']
-        ]);
+        Nacionalidade::create(['nation' => 'Antígua e Barbuda', 'name' => 'Antiguano']);
+        Nacionalidade::create(['nation' => 'Argentina', 'name' => 'Argentino']);
+        Nacionalidade::create(['nation' => 'Bahamas', 'name' => 'Bahamense']);
+        Nacionalidade::create(['nation' => 'Barbados', 'name' => 'Barbadiano, barbadense']);
+        Nacionalidade::create(['nation' => 'Belize', 'name' => 'Belizenho']);
+        Nacionalidade::create(['nation' => 'Bolívia', 'name' => 'Boliviano']);
+        Nacionalidade::create(['nation' => 'Brasil', 'name' => 'Brasileiro']);
+        Nacionalidade::create(['nation' => 'Chile', 'name' => 'Chileno']);
+        Nacionalidade::create(['nation' => 'Colômbia', 'name' => 'Colombiano']);
+        Nacionalidade::create(['nation' => 'Costa Rica', 'name' => 'Costarriquenho']);
+        Nacionalidade::create(['nation' => 'Cuba', 'name' => 'Cubano']);
+        Nacionalidade::create(['nation' => 'Dominica', 'name' => 'Dominicano']);
+        Nacionalidade::create(['nation' => 'Equador', 'name' => 'Equatoriano']);
+        Nacionalidade::create(['nation' => 'El Salvador', 'name' => 'Salvadorenho']);
+        Nacionalidade::create(['nation' => 'Granada', 'name' => 'Granadino']);
+        Nacionalidade::create(['nation' => 'Guatemala', 'name' => 'Guatemalteco']);
+        Nacionalidade::create(['nation' => 'Guiana', 'name' => 'Guianês']);
+        Nacionalidade::create(['nation' => 'Guiana Francesa', 'name' => 'Guianense']);
+        Nacionalidade::create(['nation' => 'Haiti', 'name' => 'Haitiano']);
+        Nacionalidade::create(['nation' => 'Honduras', 'name' => 'Hondurenho']);
+        Nacionalidade::create(['nation' => 'Jamaica', 'name' => 'Jamaicano']);
+        Nacionalidade::create(['nation' => 'México', 'name' => 'Mexicano']);
+        Nacionalidade::create(['nation' => 'Nicarágua', 'name' => 'Nicaraguense']);
+        Nacionalidade::create(['nation' => 'Panamá', 'name' => 'Panamenho']);
+        Nacionalidade::create(['nation' => 'Paraguai', 'name' => 'Paraguaio']);
+        Nacionalidade::create(['nation' => 'Peru', 'name' => 'Peruano']);
+        Nacionalidade::create(['nation' => 'Porto Rico', 'name' => 'Portorriquenho']);
+        Nacionalidade::create(['nation' => 'República Dominicana', 'name' => 'Dominicana']);
+        Nacionalidade::create(['nation' => 'São Cristóvão e Nevis', 'name' => 'São-cristovense']);
+        Nacionalidade::create(['nation' => 'São Vicente e Granadinas', 'name' => 'São-vicentino']);
+        Nacionalidade::create(['nation' => 'Santa Lúcia', 'name' => 'Santa-lucense']);
+        Nacionalidade::create(['nation' => 'Suriname', 'name' => 'Surinamês']);
+        Nacionalidade::create(['nation' => 'Trinidad e Tobago', 'name' => 'Trindadense']);
+        Nacionalidade::create(['nation' => 'Uruguai', 'name' => 'Uruguaio']);
+        Nacionalidade::create(['nation' => 'Venezuela', 'name' => 'Venezuelano']);
+        Nacionalidade::create(['nation' => 'Alemanha', 'name' => 'Alemão']);
+        Nacionalidade::create(['nation' => 'Áustria', 'name' => 'Austríaco']);
+        Nacionalidade::create(['nation' => 'Bélgica', 'name' => 'Belga']);
+        Nacionalidade::create(['nation' => 'Croácia', 'name' => 'Croata']);
+        Nacionalidade::create(['nation' => 'Dinamarca', 'name' => 'Dinamarquês']);
+        Nacionalidade::create(['nation' => 'Eslováquia', 'name' => 'Eslovaco']);
+        Nacionalidade::create(['nation' => 'Eslovênia', 'name' => 'Esloveno']);
+        Nacionalidade::create(['nation' => 'Espanha', 'name' => 'Espanhol']);
+        Nacionalidade::create(['nation' => 'França', 'name' => 'Francês']);
+        Nacionalidade::create(['nation' => 'Grécia', 'name' => 'Grego']);
+        Nacionalidade::create(['nation' => 'Hungria', 'name' => 'Húngaro']);
+        Nacionalidade::create(['nation' => 'Irlanda', 'name' => 'Irlandês']);
+        Nacionalidade::create(['nation' => 'Itália', 'name' => 'Italiano']);
+        Nacionalidade::create(['nation' => 'Noruega', 'name' => 'Noruego']);
+        Nacionalidade::create(['nation' => 'Países Baixos', 'name' => 'Holandês']);
+        Nacionalidade::create(['nation' => 'Polônia', 'name' => 'Polonês']);
+        Nacionalidade::create(['nation' => 'Portugal', 'name' => 'Português']);
+        Nacionalidade::create(['nation' => 'Reino Unido', 'name' => 'Britânico']);
+        Nacionalidade::create(['nation' => 'Inglaterra', 'name' => 'Inglês']);
+        Nacionalidade::create(['nation' => 'País de Gales', 'name' => 'Galês']);
+        Nacionalidade::create(['nation' => 'Escócia', 'name' => 'Escocês']);
+        Nacionalidade::create(['nation' => 'Romênia', 'name' => 'Romeno']);
+        Nacionalidade::create(['nation' => 'Rússia', 'name' => 'Russo']);
+        Nacionalidade::create(['nation' => 'Sérvio', 'name' => 'Sérvio']);
+        Nacionalidade::create(['nation' => 'Suécia', 'name' => 'Sueco']);
+        Nacionalidade::create(['nation' => 'Suíça', 'name' => 'Suíço']);
+        Nacionalidade::create(['nation' => 'Turquia', 'name' => 'Turco']);
+        Nacionalidade::create(['nation' => 'Ucrânia', 'name' => 'Ucraniano']);
+        Nacionalidade::create(['nation' => 'Estados Unidos', 'name' => 'Americano']);
+        Nacionalidade::create(['nation' => 'Canadá', 'name' => 'Canadense']);
+        Nacionalidade::create(['nation' => 'Angola', 'name' => 'Angolano']);
+        Nacionalidade::create(['nation' => 'Moçambique', 'name' => 'Moçambicano']);
+        Nacionalidade::create(['nation' => 'África do Sul', 'name' => 'Sul-africano']);
+        Nacionalidade::create(['nation' => 'Zimbabue', 'name' => 'Zimbabuense']);
+        Nacionalidade::create(['nation' => 'Argélia', 'name' => 'Argélia']);
+        Nacionalidade::create(['nation' => 'Comores', 'name' => 'Comorense']);
+        Nacionalidade::create(['nation' => 'Egito', 'name' => 'Egípcio']);
+        Nacionalidade::create(['nation' => 'Líbia', 'name' => 'Líbio']);
+        Nacionalidade::create(['nation' => 'Marrocos', 'name' => 'Marroquino']);
+        Nacionalidade::create(['nation' => 'Gana', 'name' => 'Ganés']);
+        Nacionalidade::create(['nation' => 'Quênia', 'name' => 'Queniano']);
+        Nacionalidade::create(['nation' => 'Ruanda', 'name' => 'Ruandês']);
+        Nacionalidade::create(['nation' => 'Uganda', 'name' => 'Ugandense']);
+        Nacionalidade::create(['nation' => 'Botsuana', 'name' => 'Bechuano']);
+        Nacionalidade::create(['nation' => 'Costa do Marfim', 'name' => 'Marfinense']);
+        Nacionalidade::create(['nation' => 'Camarões', 'name' => 'Camaronense']);
+        Nacionalidade::create(['nation' => 'Nigéria', 'name' => 'Nigeriano']);
+        Nacionalidade::create(['nation' => 'Somália', 'name' => 'Somali']);
+        Nacionalidade::create(['nation' => 'Austrália', 'name' => 'Australiano']);
+        Nacionalidade::create(['nation' => 'Nova Zelândia', 'name' => 'Neozelandês']);
+        Nacionalidade::create(['nation' => 'Afeganistão', 'name' => 'Afegão']);
+        Nacionalidade::create(['nation' => 'Arábia Saudita', 'name' => 'Saudita']);
+        Nacionalidade::create(['nation' => 'Armênia', 'name' => 'Armeno']);
+        Nacionalidade::create(['nation' => 'Armeno', 'name' => 'Bangladesh']);
+        Nacionalidade::create(['nation' => 'China', 'name' => 'Chinês']);
+        Nacionalidade::create(['nation' => 'Coréia do Norte', 'name' => 'Norte-coreano, coreano']);
+        Nacionalidade::create(['nation' => 'Coréia do Sul', 'name' => 'Sul-coreano, coreano']);
+        Nacionalidade::create(['nation' => 'Índia', 'name' => 'Indiano']);
+        Nacionalidade::create(['nation' => 'Indonésia', 'name' => 'Indonésio']);
+        Nacionalidade::create(['nation' => 'Iraque', 'name' => 'Iraquiano']);
+        Nacionalidade::create(['nation' => 'Irã', 'name' => 'Iraniano']);
+        Nacionalidade::create(['nation' => 'Israel', 'name' => 'Israelita']);
+        Nacionalidade::create(['nation' => 'Japão', 'name' => 'Japonês']);
+        Nacionalidade::create(['nation' => 'Malásia', 'name' => 'Malaio']);
+        Nacionalidade::create(['nation' => 'Nepal', 'name' => 'Nepalês']);
+        Nacionalidade::create(['nation' => 'Omã', 'name' => 'Omanense']);
+        Nacionalidade::create(['nation' => 'Paquistão', 'name' => 'Paquistanês']);
+        Nacionalidade::create(['nation' => 'Palestina', 'name' => 'Palestino']);
+        Nacionalidade::create(['nation' => 'Qatar', 'name' => 'Qatarense']);
+        Nacionalidade::create(['nation' => 'Síria', 'name' => 'Sírio']);
+        Nacionalidade::create(['nation' => 'Sri Lanka', 'name' => 'Cingalês']);
+        Nacionalidade::create(['nation' => 'Tailândia', 'name' => 'Tailandês']);
+        Nacionalidade::create(['nation' => 'Timor-Leste', 'name' => 'Timorense, maubere']);
+        Nacionalidade::create(['nation' => 'Emirados Árabes Unidos', 'name' => 'Árabe, emiratense']);
+        Nacionalidade::create(['nation' => 'Vietnã', 'name' => 'Vietnamita']);
+        Nacionalidade::create(['nation' => 'Iêmen', 'name' => 'Iemenita']);
     }
 }

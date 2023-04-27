@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTelephoneDdisTable extends Migration
+class CreateSegurancaMedidasTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class CreateTelephoneDdisTable extends Migration
      */
     public function up()
     {
-        Schema::create('telephone_ddis', function (Blueprint $table) {
+        Schema::create('seguranca_medidas', function (Blueprint $table) {
             $table->id();
-            $table->string('nation');
-            $table->string('ddi');
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -28,6 +27,6 @@ class CreateTelephoneDdisTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('telephone_ddis');
+        Schema::dropIfExists('seguranca_medidas');
     }
 }

@@ -15,4 +15,7 @@ class IdentidadeOrgao extends Model
         'name',
         'sigla'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setSiglaAttribute($value) {$this->attributes['sigla'] = mb_strtoupper($value);}
 }

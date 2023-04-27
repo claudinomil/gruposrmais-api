@@ -633,41 +633,41 @@ class Transacoes
                 }
                 $dados .= $x . "E-mail: " . $y . $laterData['email'] . "<br>";
 
-                if ($beforeData['telephone_1'] != $laterData['telephone_1']) {
+                if ($beforeData['telefone_1'] != $laterData['telefone_1']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Telefone 1: " . $y . $laterData['telephone_1'] . "<br>";
+                $dados .= $x . "Telefone 1: " . $y . $laterData['telefone_1'] . "<br>";
 
-                if ($beforeData['telephone_2'] != $laterData['telephone_2']) {
+                if ($beforeData['telefone_2'] != $laterData['telefone_2']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Telefone 2: " . $y . $laterData['telephone_2'] . "<br>";
+                $dados .= $x . "Telefone 2: " . $y . $laterData['telefone_2'] . "<br>";
 
-                if ($beforeData['cellular_1'] != $laterData['cellular_1']) {
+                if ($beforeData['celular_1'] != $laterData['celular_1']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Celular 1: " . $y . $laterData['cellular_1'] . "<br>";
+                $dados .= $x . "Celular 1: " . $y . $laterData['celular_1'] . "<br>";
 
-                if ($beforeData['cellular_2'] != $laterData['cellular_2']) {
+                if ($beforeData['celular_2'] != $laterData['celular_2']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Celular 2: " . $y . $laterData['cellular_2'] . "<br>";
+                $dados .= $x . "Celular 2: " . $y . $laterData['celular_2'] . "<br>";
 
                 if ($beforeData['funcao_id'] != $laterData['funcao_id']) {
                     $x = "<font class='text-danger'>";
@@ -1680,6 +1680,33 @@ class Transacoes
 
             //Propostas
             if ($submodulo_id == 26) {
+                if ($beforeData['data_proposta'] != $laterData['data_proposta']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Data Proposta: " . $y . $laterData['data_proposta'] . "<br>";
+
+                if ($beforeData['numero_proposta'] != $laterData['numero_proposta']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Número Proposta: " . $y . $laterData['numero_proposta'] . "<br>";
+
+                if ($beforeData['ano_proposta'] != $laterData['ano_proposta']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Ano Proposta: " . $y . $laterData['ano_proposta'] . "<br>";
+
                 if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
@@ -1691,6 +1718,195 @@ class Transacoes
                     $search = Cliente::where('id', $laterData['cliente_id'])->get(['name']);
                     $dados .= $x . "Cliente: " . $y . $search[0]['name'] . "<br>";
                 }
+
+                if ($beforeData['cliente_nome'] != $laterData['cliente_nome']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Cliente Nome: " . $y . $laterData['cliente_nome'] . "<br>";
+
+                if ($beforeData['aos_cuidados'] != $laterData['aos_cuidados']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Aos Cuidados: " . $y . $laterData['aos_cuidados'] . "<br>";
+
+                if ($beforeData['texto_acima_tabela_servico'] != $laterData['texto_acima_tabela_servico']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Texto Acima Tabela Serviço: " . $y . $laterData['texto_acima_tabela_servico'] . "<br>";
+
+                if ($beforeData['porcentagem_desconto'] != $laterData['porcentagem_desconto']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Porcentagem Desconto: " . $y . $laterData['porcentagem_desconto'] . "<br>";
+
+                if ($beforeData['valor_desconto'] != $laterData['valor_desconto']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Valor Desconto: " . $y . $laterData['valor_desconto'] . "<br>";
+
+                if ($beforeData['valor_total'] != $laterData['valor_total']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Valor Total: " . $y . $laterData['valor_total'] . "<br>";
+
+                if ($beforeData['forma_pagamento'] != $laterData['forma_pagamento']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Forma Pagamento: " . $y . $laterData['forma_pagamento'] . "<br>";
+
+                if ($beforeData['paragrafo_1'] != $laterData['paragrafo_1']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 1: " . $y . $laterData['paragrafo_1'] . "<br>";
+
+                if ($beforeData['paragrafo_2'] != $laterData['paragrafo_2']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 2: " . $y . $laterData['paragrafo_2'] . "<br>";
+
+                if ($beforeData['paragrafo_3'] != $laterData['paragrafo_3']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 3: " . $y . $laterData['paragrafo_3'] . "<br>";
+
+                if ($beforeData['paragrafo_4'] != $laterData['paragrafo_4']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 4: " . $y . $laterData['paragrafo_4'] . "<br>";
+
+                if ($beforeData['paragrafo_5'] != $laterData['paragrafo_5']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 5: " . $y . $laterData['paragrafo_5'] . "<br>";
+
+                if ($beforeData['paragrafo_6'] != $laterData['paragrafo_6']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 6: " . $y . $laterData['paragrafo_6'] . "<br>";
+
+                if ($beforeData['paragrafo_7'] != $laterData['paragrafo_7']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 7: " . $y . $laterData['paragrafo_7'] . "<br>";
+
+                if ($beforeData['paragrafo_8'] != $laterData['paragrafo_8']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 8: " . $y . $laterData['paragrafo_8'] . "<br>";
+
+                if ($beforeData['paragrafo_9'] != $laterData['paragrafo_9']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 9: " . $y . $laterData['paragrafo_9'] . "<br>";
+
+                if ($beforeData['paragrafo_10'] != $laterData['paragrafo_10']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Generalidade 10: " . $y . $laterData['paragrafo_10'] . "<br>";
+            }
+
+            //Segurança Medidas
+            if ($submodulo_id == 27) {
+                if ($beforeData['name'] != $laterData['name']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
+            }
+
+            //Visitas Técnicas
+            if ($submodulo_id == 28) {
+                if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['cliente_id'] != "") and ($laterData['cliente_id'] != 0)) {
+                    $search = Cliente::where('id', $laterData['cliente_id'])->get(['name']);
+                    $dados .= $x . "Cliente: " . $y . $search[0]['name'] . "<br>";
+                }
+
+                if ($beforeData['data_visita'] != $laterData['data_visita']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                $dados .= $x . "Data Visita: " . $y . $laterData['data_visita'] . "<br>";
             }
 
             //gravar transacao'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

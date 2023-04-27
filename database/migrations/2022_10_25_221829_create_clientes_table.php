@@ -48,13 +48,24 @@ class CreateClientesTable extends Migration
             $table->foreignId('banco_id')->nullable()->constrained('bancos');
             $table->string('agencia')->nullable();
             $table->string('conta')->nullable();
-            $table->string('email')->nullable()->unique();
+            $table->string('email')->nullable();
             $table->string('site')->nullable();
             $table->string('telefone_1')->nullable();
             $table->string('telefone_2')->nullable();
             $table->string('celular_1')->nullable();
             $table->string('celular_2')->nullable();
             $table->text('foto')->nullable();
+
+            $table->integer('numero_pavimentos')->nullable();
+            $table->decimal('altura')->nullable();
+            $table->decimal('area_total_construida')->nullable();
+            $table->integer('lotacao')->nullable();
+            $table->integer('carga_incendio')->nullable();
+            $table->foreignId('incendio_risco_id')->nullable()->constrained('incendio_riscos');
+            $table->foreignId('edificacao_classificacao_id')->nullable()->constrained('edificacao_classificacoes');
+            $table->integer('laudo_exigencias')->nullable();
+            $table->integer('certificado_aprovacao')->nullable();
+
             $table->timestamps();
         });
     }

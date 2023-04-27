@@ -14,12 +14,26 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        //Criando Usuario
         $user = \App\Models\User::factory()->create([
-            'name' => 'Claudino Mil Homens de Moraes',
+            'name' => 'CLAUDINO MIL HOMENS DE MORAES',
             'email' => 'claudinomoraes@yahoo.com.br',
             'password' => Hash::make('claudino1971'),
-            'email_verified_at'=>'2022-06-02 12:00:00',
+            'email_verified_at' => now(),
+            'user_confirmed_at' => now(),
+            'avatar' => 'build/assets/images/users/avatar-0.png',
+            'layout_mode' => 'layout_mode_light',
+            'layout_style' => 'layout_style_vertical_scrollable',
+            'grupo_id' => '1',
+            'situacao_id' => '1',
+            'created_at' => now()
+        ]);
+
+        $user2 = \App\Models\User::factory()->create([
+            'name' => 'MARCUS VINICIUS MACHADO DE OLIVEIRA',
+            'email' => 'mvmdeoliveira@gmail.com',
+            'password' => Hash::make('12345678'),
+            'email_verified_at' => now(),
+            'user_confirmed_at' => now(),
             'avatar' => 'build/assets/images/users/avatar-0.png',
             'layout_mode' => 'layout_mode_light',
             'layout_style' => 'layout_style_vertical_scrollable',

@@ -77,46 +77,6 @@ class PropostaController extends Controller
     public function store(PropostaStoreRequest $request)
     {
         try {
-            //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            if ($request['data_proposta'] != '') {$request['data_proposta'] = Carbon::createFromFormat('d/m/Y', $request['data_proposta'])->format('Y-m-d');}
-
-            //porcentagem_desconto
-            if ($request['porcentagem_desconto'] != '') {
-                $porcentagem_desconto = $request['porcentagem_desconto'];
-                $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                $porcentagem_desconto = str_replace(',', '.', $porcentagem_desconto);
-                $request['porcentagem_desconto'] = $porcentagem_desconto;
-            } else {
-                $request['porcentagem_desconto'] = 0;
-            }
-
-            //valor_total
-            if ($request['valor_total'] != '') {
-                $valor_total = $request['valor_total'];
-                $valor_total = str_replace('.', '', $valor_total);
-                $valor_total = str_replace('.', '', $valor_total);
-                $valor_total = str_replace('.', '', $valor_total);
-                $valor_total = str_replace(',', '.', $valor_total);
-                $request['valor_total'] = $valor_total;
-            } else {
-                $request['valor_total'] = 0;
-            }
-
-            //valor_desconto
-            if ($request['valor_desconto'] != '') {
-                $valor_desconto = $request['valor_desconto'];
-                $valor_desconto = str_replace('.', '', $valor_desconto);
-                $valor_desconto = str_replace('.', '', $valor_desconto);
-                $valor_desconto = str_replace('.', '', $valor_desconto);
-                $valor_desconto = str_replace(',', '.', $valor_desconto);
-                $request['valor_desconto'] = $valor_desconto;
-            } else {
-                $request['valor_desconto'] = 0;
-            }
-            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
             //Incluindo registro
             $registro = $this->proposta->create($request->all());
 
@@ -164,46 +124,6 @@ class PropostaController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                if ($request['data_proposta'] != '') {$request['data_proposta'] = Carbon::createFromFormat('d/m/Y', $request['data_proposta'])->format('Y-m-d');}
-
-                //porcentagem_desconto
-                if ($request['porcentagem_desconto'] != '') {
-                    $porcentagem_desconto = $request['porcentagem_desconto'];
-                    $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                    $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                    $porcentagem_desconto = str_replace('.', '', $porcentagem_desconto);
-                    $porcentagem_desconto = str_replace(',', '.', $porcentagem_desconto);
-                    $request['porcentagem_desconto'] = $porcentagem_desconto;
-                } else {
-                    $request['porcentagem_desconto'] = 0;
-                }
-
-                //valor_total
-                if ($request['valor_total'] != '') {
-                    $valor_total = $request['valor_total'];
-                    $valor_total = str_replace('.', '', $valor_total);
-                    $valor_total = str_replace('.', '', $valor_total);
-                    $valor_total = str_replace('.', '', $valor_total);
-                    $valor_total = str_replace(',', '.', $valor_total);
-                    $request['valor_total'] = $valor_total;
-                } else {
-                    $request['valor_total'] = 0;
-                }
-
-                //valor_desconto
-                if ($request['valor_desconto'] != '') {
-                    $valor_desconto = $request['valor_desconto'];
-                    $valor_desconto = str_replace('.', '', $valor_desconto);
-                    $valor_desconto = str_replace('.', '', $valor_desconto);
-                    $valor_desconto = str_replace('.', '', $valor_desconto);
-                    $valor_desconto = str_replace(',', '.', $valor_desconto);
-                    $request['valor_desconto'] = $valor_desconto;
-                } else {
-                    $request['valor_desconto'] = 0;
-                }
-                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
                 //Alterando registro
                 $registro->update($request->all());
 

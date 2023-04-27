@@ -15,4 +15,7 @@ class Nacionalidade extends Model
         'name',
         'nation'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+    public function setNationAttribute($value) {$this->attributes['nation'] = mb_strtoupper($value);}
 }

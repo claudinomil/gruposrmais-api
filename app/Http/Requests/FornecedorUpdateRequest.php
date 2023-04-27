@@ -62,11 +62,7 @@ class FornecedorUpdateRequest extends FormRequest
             'banco_id' => ['nullable', 'integer', 'numeric'],
             'agencia' => ['nullable', 'numeric', 'min:2'],
             'conta' => ['nullable', 'numeric', 'min:3'],
-            'email' => [
-                'nullable',
-                Rule::unique('fornecedores')->ignore($this->id),
-                'email'
-            ],
+            'email' => ['nullable', 'email'],
             'site' => [
                 'nullable',
                 Rule::unique('fornecedores')->ignore($this->id),
@@ -112,7 +108,6 @@ class FornecedorUpdateRequest extends FormRequest
             'agencia.min' => 'A Agência deve ter pelo menos 2 caracteres.',
             'conta.numeric' => 'A Conta deve ser um número.',
             'conta.min' => 'A Conta deve ter pelo menos 3 caracteres.',
-            'email.unique' => 'O E-mail já existe.',
             'email.email' => 'O E-mail deve ser um endereço válido.',
             'site.unique' => 'O Site já existe.',
             'site.site' => 'O Site deve ser um endereço válido.',

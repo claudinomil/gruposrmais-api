@@ -26,10 +26,10 @@ class CreateFuncionariosTable extends Migration
             $table->string('email')->nullable()->unique();
             $table->string('pai')->nullable();
             $table->string('mae')->nullable();
-            $table->string('telephone_1')->nullable();
-            $table->string('telephone_2')->nullable();
-            $table->string('cellular_1')->nullable();
-            $table->string('cellular_2')->nullable();
+            $table->string('telefone_1')->nullable();
+            $table->string('telefone_2')->nullable();
+            $table->string('celular_1')->nullable();
+            $table->string('celular_2')->nullable();
             $table->foreignId('personal_identidade_estado_id')->nullable()->constrained('estados');
             $table->foreignId('personal_identidade_orgao_id')->nullable()->constrained('identidade_orgaos');
             $table->string('personal_identidade_numero')->nullable();

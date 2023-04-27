@@ -6,10 +6,14 @@ use App\API\ApiReturn;
 use App\Http\Requests\ClienteStoreRequest;
 use App\Http\Requests\ClienteUpdateRequest;
 use App\Models\Banco;
+use App\Models\ClienteSegurancaMedida;
+use App\Models\EdificacaoClassificacao;
 use App\Models\Funcionario;
 use App\Models\Genero;
 use App\Models\IdentidadeOrgao;
 use App\Models\Estado;
+use App\Models\IncendioRiscos;
+use App\Models\SegurancaMedida;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,6 +51,9 @@ class ClienteController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //buscar dados das medidas de segurança
+                $registro['cliente_seguranca_medidas'] = ClienteSegurancaMedida::where('cliente_id', '=', $id)->get();
+
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
@@ -81,6 +88,15 @@ class ClienteController extends Controller
             //Estados para a Identidade
             $registros['identidade_estados'] = Estado::all();
 
+            //Edificacao Classificacoes
+            $registros['edificacao_classificacoes'] = EdificacaoClassificacao::all();
+
+            //Incêndio Riscos
+            $registros['incendio_riscos'] = IncendioRiscos::all();
+
+            //Segurança Medidas
+            $registros['seguranca_medidas'] = SegurancaMedida::all();
+
             return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registros), 200);
         } catch (\Exception $e) {
             if (config('app.debug')) {
@@ -94,17 +110,27 @@ class ClienteController extends Controller
     public function store(ClienteStoreRequest $request)
     {
         try {
-            //Preparando request
-            $data = $request->all();
-
-            if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-            if ($request['identidade_data_emissao'] != '') {$data['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['identidade_data_emissao'])->format('Y-m-d');}
-
-            //Campo foto
-            $data['foto'] = 'build/assets/images/clientes/cliente-0.png';
-
             //Incluindo registro
-            $this->cliente->create($data);
+            $registro = $this->cliente->create($request->all());
+
+            //Gravar dados na tabela clientes_seguranca_medidas'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            $cliente_id = $registro['id'];
+            $numero_pavimentos = $request['numero_pavimentos'];
+            $maior_id_tabela_seguranca_medidas = $request['maior_id_tabela_seguranca_medidas'];
+
+            for($i=1; $i<=$numero_pavimentos; $i++) {
+                for ($m = 1; $m <= $maior_id_tabela_seguranca_medidas; $m++) {
+                    if (isset($request['seguranca_medida_' . $i . '_' . $m])) {
+                        $data = array();
+                        $data['pavimento'] = $i;
+                        $data['cliente_id'] = $cliente_id;
+                        $data['seguranca_medida_id'] = $m;
+
+                        ClienteSegurancaMedida::create($data);
+                    }
+                }
+            }
+            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
@@ -124,14 +150,32 @@ class ClienteController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request
-                $data = $request->all();
-
-                if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-                if ($request['identidade_data_emissao'] != '') {$data['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['identidade_data_emissao'])->format('Y-m-d');}
-
                 //Alterando registro
-                $registro->update($data);
+                $registro->update($request->all());
+
+
+                //Apagarr dados na tabela clientes_seguranca_medidas''''''''''''''''''''''''''''''''''''''''''''''''''''
+                ClienteSegurancaMedida::where('cliente_id', '=', $id)->delete();
+                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+                //Gravar dados na tabela clientes_seguranca_medidas'''''''''''''''''''''''''''''''''''''''''''''''''''''
+                $cliente_id = $id;
+                $numero_pavimentos = $request['numero_pavimentos'];
+                $maior_id_tabela_seguranca_medidas = $request['maior_id_tabela_seguranca_medidas'];
+
+                for($i=1; $i<=$numero_pavimentos; $i++) {
+                    for ($m = 1; $m <= $maior_id_tabela_seguranca_medidas; $m++) {
+                        if (isset($request['seguranca_medida_' . $i . '_' . $m])) {
+                            $data = array();
+                            $data['pavimento'] = $i;
+                            $data['cliente_id'] = $cliente_id;
+                            $data['seguranca_medida_id'] = $m;
+
+                            ClienteSegurancaMedida::create($data);
+                        }
+                    }
+                }
+                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }

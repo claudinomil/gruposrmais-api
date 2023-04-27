@@ -111,22 +111,8 @@ class FuncionarioController extends Controller
     public function store(FuncionarioStoreRequest $request)
     {
         try {
-            //Preparando request
-            $data = $request->all();
-
-            if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-            if ($request['data_admissao'] != '') {$data['data_admissao'] = Carbon::createFromFormat('d/m/Y', $request['data_admissao'])->format('Y-m-d');}
-            if ($request['data_demissao'] != '') {$data['data_demissao'] = Carbon::createFromFormat('d/m/Y', $request['data_demissao'])->format('Y-m-d');}
-            if ($request['data_cadastro'] != '') {$data['data_cadastro'] = Carbon::createFromFormat('d/m/Y', $request['data_cadastro'])->format('Y-m-d');}
-            if ($request['data_afastamento'] != '') {$data['data_afastamento'] = Carbon::createFromFormat('d/m/Y', $request['data_afastamento'])->format('Y-m-d');}
-            if ($request['personal_identidade_data_emissao'] != '') {$data['personal_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['personal_identidade_data_emissao'])->format('Y-m-d');}
-            if ($request['professional_identidade_data_emissao'] != '') {$data['professional_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['professional_identidade_data_emissao'])->format('Y-m-d');}
-
-            //Campo foto
-            $data['foto'] = 'build/assets/images/funcionarios/funcionario-0.png';
-
             //Incluindo registro
-            $this->funcionario->create($data);
+            $this->funcionario->create($request->all());
 
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
@@ -146,19 +132,8 @@ class FuncionarioController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request
-                $data = $request->all();
-
-                if ($request['data_nascimento'] != '') {$data['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $request['data_nascimento'])->format('Y-m-d');}
-                if ($request['data_admissao'] != '') {$data['data_admissao'] = Carbon::createFromFormat('d/m/Y', $request['data_admissao'])->format('Y-m-d');}
-                if ($request['data_demissao'] != '') {$data['data_demissao'] = Carbon::createFromFormat('d/m/Y', $request['data_demissao'])->format('Y-m-d');}
-                if ($request['data_cadastro'] != '') {$data['data_cadastro'] = Carbon::createFromFormat('d/m/Y', $request['data_cadastro'])->format('Y-m-d');}
-                if ($request['data_afastamento'] != '') {$data['data_afastamento'] = Carbon::createFromFormat('d/m/Y', $request['data_afastamento'])->format('Y-m-d');}
-                if ($request['personal_identidade_data_emissao'] != '') {$data['personal_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['personal_identidade_data_emissao'])->format('Y-m-d');}
-                if ($request['professional_identidade_data_emissao'] != '') {$data['professional_identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $request['professional_identidade_data_emissao'])->format('Y-m-d');}
-
                 //Alterando registro
-                $registro->update($data);
+                $registro->update($request->all());
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }

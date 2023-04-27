@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\IdentidadeOrgao;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,199 +10,196 @@ class IdentidadeOrgaosSeeder extends Seeder
 {
     public function run()
     {
-        //criando Genero
-        DB::table('identidade_orgaos')->insert([
-            ['sigla' => 'ABNC', 'name' => 'Academia Brasileira de Neurocirurgia'],
-            ['sigla' => 'AGU', 'name' => 'Advocacia-Geral da União'],
-            ['sigla' => 'ANAC', 'name' => 'Agência Nacional de Aviação Civil'],
-            ['sigla' => 'CAER', 'name' => 'Clube de Aeronáutica'],
-            ['sigla' => 'CAU', 'name' => 'Conselho de Arquitetura e Urbanismo'],
-            ['sigla' => 'CBM', 'name' => 'Corpo de Bombeiro Militar'],
-            ['sigla' => 'CFA', 'name' => 'Conselho Federal Administração'],
-            ['sigla' => 'CFB', 'name' => 'Conselho Federal de Biblioteconomia'],
-            ['sigla' => 'CFBIO', 'name' => 'Conselho Federal de Biologia'],
-            ['sigla' => 'CFBM', 'name' => 'Conselho Federal de Biomedicina'],
-            ['sigla' => 'CFC', 'name' => 'Conselho Federal de Contabilidade'],
-            ['sigla' => 'CFESS', 'name' => 'Conselho Federal de Serviço Social'],
-            ['sigla' => 'CFF', 'name' => 'Conselho Regional de Farmácia'],
-            ['sigla' => 'CFFA', 'name' => 'Conselho Federal de Fonoaudiologia'],
-            ['sigla' => 'CFM', 'name' => 'Conselho Federal de Medicina'],
-            ['sigla' => 'CFMV', 'name' => 'Conselho Federal de Medicina Veterinária'],
-            ['sigla' => 'CFN', 'name' => 'Conselho Federal de Nutrição'],
-            ['sigla' => 'CFO', 'name' => 'Conselho Federal de Odontologia'],
-            ['sigla' => 'CFP', 'name' => 'Conselho Federal de Psicologia'],
-            ['sigla' => 'CFQ', 'name' => 'Conselho Regional de Química'],
-            ['sigla' => 'CFT', 'name' => 'Conselho Federal dos Técnicos Industriais'],
-            ['sigla' => 'CFTA', 'name' => 'Conselho Federal dos Técnicos Agrícolas'],
-            ['sigla' => 'CGPI', 'name' => 'Coordenação Geral de Privilégios e Imunidades'],
-            ['sigla' => 'CGPMAF', 'name' => 'Coordenadoria Geral de Polícia Marítima, Aeronáutica e de Fronteiras'],
-            ['sigla' => 'CIPC', 'name' => 'Centro de Inteligência da Polícia Civil'],
-            ['sigla' => 'CNIG', 'name' => 'Conselho Nacional de Imigração'],
-            ['sigla' => 'CNT', 'name' => 'Confederação Nacional do Transporte'],
-            ['sigla' => 'CNTV', 'name' => 'Confederação Nacional de Vigilantes & Prestadores de Serviços'],
-            ['sigla' => 'COFECI', 'name' => 'Conselho Federal de Corretores de Imóveis'],
-            ['sigla' => 'COFECON', 'name' => 'Conselho Federal de Economia'],
-            ['sigla' => 'COFEM', 'name' => 'Conselho Federal de Museologia'],
-            ['sigla' => 'COFEN', 'name' => 'Conselho Federal de Enfermagem'],
-            ['sigla' => 'COFFITO', 'name' => 'Conselho Regional de Fisioterapia e Terapia Ocupacional'],
-            ['sigla' => 'COMAER', 'name' => 'Comando da Aeronáutica'],
-            ['sigla' => 'CONFE', 'name' => 'Conselho Federal de Estatística'],
-            ['sigla' => 'CONFEA', 'name' => 'Conselho Federal de Engenharia e Agronomia'],
-            ['sigla' => 'CONFEF', 'name' => 'Conselho Federal de Educação Física'],
-            ['sigla' => 'CONFERE', 'name' => 'Conselho Federal dos Representantes Comerciais'],
-            ['sigla' => 'CONRE', 'name' => 'Conselho Regional de Estatística'],
-            ['sigla' => 'CONRERP', 'name' => 'Conselho Federal de Profissionais de Relações Públicas'],
-            ['sigla' => 'CORE', 'name' => 'Conselho Regional dos Representantes Comerciais'],
-            ['sigla' => 'CORECON', 'name' => 'Conselho Regional de Economia'],
-            ['sigla' => 'COREM', 'name' => 'Conselho Regional de Museologia'],
-            ['sigla' => 'COREN', 'name' => 'Conselho Regional de Enfermagem'],
-            ['sigla' => 'CRA', 'name' => 'Conselho Regional de Administração'],
-            ['sigla' => 'CRAS', 'name' => 'Centro de Referência de Assistência Social'],
-            ['sigla' => 'CRB', 'name' => 'Conselho Regional de Biblioteconomia'],
-            ['sigla' => 'CRBIO', 'name' => 'Conselho Regional de Biologia'],
-            ['sigla' => 'CRBM', 'name' => 'Conselho Regional de Biomedicina'],
-            ['sigla' => 'CRC', 'name' => 'Conselho Regional de Contabilidade'],
-            ['sigla' => 'CREA', 'name' => 'Conselho Regional de Engenharia e Agronomia'],
-            ['sigla' => 'CRECI', 'name' => 'Conselho Regional de Corretores de Imóveis'],
-            ['sigla' => 'CREF', 'name' => 'Conselho Regional de Educação Física'],
-            ['sigla' => 'CREFITO', 'name' => 'Conselho Regional de Fisioterapia e Terapia Ocupacional'],
-            ['sigla' => 'CRESS', 'name' => 'Conselho Regional de Serviço Social'],
-            ['sigla' => 'CRF', 'name' => 'Conselho Regional de Farmácia'],
-            ['sigla' => 'CRFA', 'name' => 'Conselho Regional de Fonoaudiologia'],
-            ['sigla' => 'CRM', 'name' => 'Conselho Regional de Medicina'],
-            ['sigla' => 'CRMV', 'name' => 'Conselho Regional de Medicina Veterinária'],
-            ['sigla' => 'CRN', 'name' => 'Conselho Regional de Nutrição'],
-            ['sigla' => 'CRO', 'name' => 'Conselho Regional de Odontologia'],
-            ['sigla' => 'CRP', 'name' => 'Conselho Regional de Psicologia'],
-            ['sigla' => 'CRPRE', 'name' => 'Conselho Regional de Profissionais de Relações Públicas'],
-            ['sigla' => 'CRQ', 'name' => 'Conselho Regional de Química'],
-            ['sigla' => 'CRT', 'name' => 'Conselho Regional dos Técnicos Industriais'],
-            ['sigla' => 'CRTA', 'name' => 'Conselho Regional de Técnicos de Administração'],
-            ['sigla' => 'CTPS', 'name' => 'Carteira de Trabalho e Previdência Social'],
-            ['sigla' => 'CV', 'name' => 'Cartório Civil'],
-            ['sigla' => 'DELEMIG', 'name' => 'Delegacia de Polícia de Imigração'],
-            ['sigla' => 'DETRAN', 'name' => 'Departamento Estadual de Trânsito'],
-            ['sigla' => 'DGPC', 'name' => 'Diretoria Geral da Polícia Civil'],
-            ['sigla' => 'DIC', 'name' => 'Diretoria de Identificação Civil'],
-            ['sigla' => 'DICC', 'name' => 'Diretoria de Identificação Civil e Criminal'],
-            ['sigla' => 'DIREX', 'name' => 'Diretoria Executiva'],
-            ['sigla' => 'DPF', 'name' => 'Departamento de Polícia Federal'],
-            ['sigla' => 'DPMAF', 'name' => 'Divisão de Polícia Marítima, Aérea e de Fronteiras'],
-            ['sigla' => 'DPT', 'name' => 'Departamento de Polícia Técnica Geral'],
-            ['sigla' => 'DPTC', 'name' => 'Departamento de Polícia Técnico Científica'],
-            ['sigla' => 'DREX', 'name' => 'Delegacia Regional Executiva'],
-            ['sigla' => 'DRT', 'name' => 'Delegacia Regional do Trabalho'],
-            ['sigla' => 'EB', 'name' => 'Exército Brasileiro'],
-            ['sigla' => 'FAB', 'name' => 'Força Aérea Brasileira'],
-            ['sigla' => 'FENAJ', 'name' => 'Federação Nacional dos Jornalistas'],
-            ['sigla' => 'FGTS', 'name' => 'Fundo de Garantia do Tempo de Serviço'],
-            ['sigla' => 'FIPE', 'name' => 'Fundação Instituto de Pesquisas Econômicas'],
-            ['sigla' => 'FLS', 'name' => 'Fundação Lyndolpho Silva'],
-            ['sigla' => 'FUNAI', 'name' => 'Fundação Nacional do Índio'],
-            ['sigla' => 'GEJSP', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania'],
-            ['sigla' => 'GEJSPC', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania'],
-            ['sigla' => 'GEJUSPC', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania'],
-            ['sigla' => 'GESP', 'name' => 'Gerência de Estado de Segurança Pública'],
-            ['sigla' => 'GOVGO', 'name' => 'Governo do Estado de Goiás'],
-            ['sigla' => 'I CLA', 'name' => 'Carteira de Identidade Classista'],
-            ['sigla' => 'ICP', 'name' => 'Instituto de Polícia Científica'],
-            ['sigla' => 'IDAMP', 'name' => 'Instituto de Identificação Dr. Aroldo Mendes Paiva'],
-            ['sigla' => 'IFP', 'name' => 'Instituto Félix Pacheco'],
-            ['sigla' => 'IGP', 'name' => 'Instituto Geral de Perícias'],
-            ['sigla' => 'IIACM', 'name' => 'Instituto de Identificação Aderson Conceição de Melo'],
-            ['sigla' => 'IICC', 'name' => 'Instituto de Identificação Civil e Criminal'],
-            ['sigla' => 'IICCECF', 'name' => 'Instituto de Identificação Civil e Criminal Engrácia da Costa Francisco'],
-            ['sigla' => 'IICM', 'name' => 'Instituto de Identificação Carlos Menezes'],
-            ['sigla' => 'IIGP', 'name' => 'Instituto de Identificação Gonçalo Pereira'],
-            ['sigla' => 'IIJDM', 'name' => 'Instituto de Identificação João de Deus Martins'],
-            ['sigla' => 'IIPC', 'name' => 'Instituto de Identificação da Polícia Civil'],
-            ['sigla' => 'IIPC', 'name' => 'Instituto de Identificação Pedro Mello'],
-            ['sigla' => 'IIRGD', 'name' => 'Instituto de Identificação Ricardo Gumbleton Daunt'],
-            ['sigla' => 'IIRHM', 'name' => 'Instituto de Identificação Raimundo Hermínio de Melo'],
-            ['sigla' => 'IITB', 'name' => 'Instituto de Identificação Tavares Buril'],
-            ['sigla' => 'IML', 'name' => 'Instituto Médico-Legal'],
-            ['sigla' => 'INI', 'name' => 'Instituto Nacional de Identificação'],
-            ['sigla' => 'IPF', 'name' => 'Instituto Pereira Faustino'],
-            ['sigla' => 'ITCP', 'name' => 'Instituto Técnico-Científico de Perícia'],
-            ['sigla' => 'ITEP', 'name' => 'Instituto Técnico-Científico de Perícia'],
-            ['sigla' => 'MAER', 'name' => 'Ministério da Aeronáutica'],
-            ['sigla' => 'MB', 'name' => 'Marinha do Brasil'],
-            ['sigla' => 'MD', 'name' => 'Ministério da Defesa'],
-            ['sigla' => 'MDS', 'name' => 'Ministério da Cidadania'],
-            ['sigla' => 'MEC', 'name' => 'Ministério da Educação e Cultura'],
-            ['sigla' => 'MEX', 'name' => 'Ministério do Exército'],
-            ['sigla' => 'MINDEF', 'name' => 'Ministério da Defesa'],
-            ['sigla' => 'MJ', 'name' => 'Ministério da Justiça'],
-            ['sigla' => 'MM', 'name' => 'Ministério da Marinha'],
-            ['sigla' => 'MMA', 'name' => 'Ministério da Marinha'],
-            ['sigla' => 'MPAS', 'name' => 'Ministério da Previdência e Assistência Social'],
-            ['sigla' => 'MPE', 'name' => 'Ministério Público Estadual'],
-            ['sigla' => 'MPF', 'name' => 'Ministério Público Federal'],
-            ['sigla' => 'MPT', 'name' => 'Ministério Público do Trabalho'],
-            ['sigla' => 'MRE', 'name' => 'Ministério das Relações Exteriores'],
-            ['sigla' => 'MT', 'name' => 'Ministério do Trabalho'],
-            ['sigla' => 'MTE', 'name' => 'Ministério da Economia'],
-            ['sigla' => 'MTPS', 'name' => 'Ministério do Trabalho e Previdência Social'],
-            ['sigla' => 'NUMIG', 'name' => 'Núcleo de Polícia de Imigração'],
-            ['sigla' => 'OAB', 'name' => 'Ordem dos Advogados do Brasil'],
-            ['sigla' => 'OMB', 'name' => 'Ordens dos Músicos do Brasil'],
-            ['sigla' => 'PC', 'name' => 'Polícia Civil'],
-            ['sigla' => 'PF', 'name' => 'Polícia Federal'],
-            ['sigla' => 'PGFN', 'name' => 'Procuradoria Geral da Fazenda Nacional'],
-            ['sigla' => 'PM', 'name' => 'Polícia Militar'],
-            ['sigla' => 'POLITEC', 'name' => 'Perícia Oficial e Identificação Técnica'],
-            ['sigla' => 'PRF', 'name' => 'Polícia Rodoviária Federal'],
-            ['sigla' => 'PTC', 'name' => 'Polícia Tecnico-Científica'],
-            ['sigla' => 'SCC', 'name' => 'Secretaria de Estado da Casa Civil'],
-            ['sigla' => 'SCJDS', 'name' => 'Secretaria Coordenadora de Justiça e Defesa Social'],
-            ['sigla' => 'SDS', 'name' => 'Secretaria de Defesa Social'],
-            ['sigla' => 'SECC', 'name' => 'Secretaria de Estado da Casa Civil'],
-            ['sigla' => 'SECCDE', 'name' => 'Secretaria de Estado da Casa Civil e Desenvolvimento Econômico'],
-            ['sigla' => 'SEDS', 'name' => 'Secretaria de Estado da Defesa Social'],
-            ['sigla' => 'SEGUP', 'name' => 'Secretaria de Estado da Segurança Pública e da Defesa Social'],
-            ['sigla' => 'SEJSP', 'name' => 'Secretaria de Estado de Justiça e Segurança Pública'],
-            ['sigla' => 'SEJUC', 'name' => 'Secretaria de Estado da Justica'],
-            ['sigla' => 'SEJUSP', 'name' => 'Secretaria de Estado de Justiça e Segurança Pública'],
-            ['sigla' => 'SEPC', 'name' => 'Secretaria de Estado da Polícia Civil'],
-            ['sigla' => 'SES', 'name' => 'Secretaria de Estado da Segurança'],
-            ['sigla' => 'SESC', 'name' => 'Secretaria de Estado da Segurança e Cidadania'],
-            ['sigla' => 'SESDC', 'name' => 'Secretaria de Estado da Segurança, Defesa e Cidadania'],
-            ['sigla' => 'SESDEC', 'name' => 'Secretaria de Estado da Segurança, Defesa e Cidadania'],
-            ['sigla' => 'SESEG', 'name' => 'Secretaria Estadual de Segurança'],
-            ['sigla' => 'SESP', 'name' => 'Secretaria de Estado da Segurança Pública'],
-            ['sigla' => 'SESPAP', 'name' => 'Secretaria de Estado da Segurança Pública e Administração Penitenciária'],
-            ['sigla' => 'SESPDC', 'name' => 'Secretaria de Estado de Segurança Publica e Defesa do Cidadão'],
-            ['sigla' => 'SESPDS', 'name' => 'Secretaria de Estado de Segurança Pública e Defesa Social'],
-            ['sigla' => 'SGPC', 'name' => 'Superintendência Geral de Polícia Civil'],
-            ['sigla' => 'SGPJ', 'name' => 'Superintendência Geral de Polícia Judiciária'],
-            ['sigla' => 'SIM', 'name' => 'Serviço de Identificação da Marinha'],
-            ['sigla' => 'SJ', 'name' => 'Secretaria da Justiça'],
-            ['sigla' => 'SJCDH', 'name' => 'Secretaria da Justiça e dos Direitos Humanos'],
-            ['sigla' => 'SJDS', 'name' => 'Secretaria Coordenadora de Justiça e Defesa Social'],
-            ['sigla' => 'SJS', 'name' => 'Secretaria da Justiça e Segurança'],
-            ['sigla' => 'SJTC', 'name' => 'Secretaria da Justiça do Trabalho e Cidadania'],
-            ['sigla' => 'SJTS', 'name' => 'Secretaria da Justiça do Trabalho e Segurança'],
-            ['sigla' => 'SNJ', 'name' => 'Secretaria Nacional de Justiça / Departamento de Estrangeiros'],
-            ['sigla' => 'SPMAF', 'name' => 'Serviço de Polícia Marítima, Aérea e de Fronteiras'],
-            ['sigla' => 'SPTC', 'name' => 'Secretaria de Polícia Técnico-Científica'],
-            ['sigla' => 'SRDPF', 'name' => 'Superintendência Regional do Departamento de Polícia Federal'],
-            ['sigla' => 'SRF', 'name' => 'Receita Federal'],
-            ['sigla' => 'SRTE', 'name' => 'Superintendência Regional do Trabalho'],
-            ['sigla' => 'SSDC', 'name' => 'Secretaria da Segurança, Defesa e Cidadania'],
-            ['sigla' => 'SSDS', 'name' => 'Secretaria da Segurança e da Defesa Social'],
-            ['sigla' => 'SSI', 'name' => 'Secretaria de Segurança e Informações'],
-            ['sigla' => 'SSP', 'name' => 'Secretaria de Segurança Pública'],
-            ['sigla' => 'SSPCGP', 'name' => 'Secretaria de Segurança Pública e Coordenadoria Geral de Perícias'],
-            ['sigla' => 'SSPDC', 'name' => 'Secretaria de Segurança Pública e Defesa do Cidadão'],
-            ['sigla' => 'SSPDS', 'name' => 'Secretaria de Segurança Pública e Defesa Social'],
-            ['sigla' => 'SSPPC', 'name' => 'Secretaria de Segurança Pública Polícia Civil'],
-            ['sigla' => 'SUSEP', 'name' => 'Superintendência de Seguros Privados'],
-            ['sigla' => 'SUSEPE', 'name' => 'Superintendência dos Serviços Penitenciários'],
-            ['sigla' => 'TJ', 'name' => 'Tribunal de Justiça'],
-            ['sigla' => 'TJAEM', 'name' => 'Tribunal Arbitral e Mediação dos Estados Brasileiros'],
-            ['sigla' => 'TRE', 'name' => 'Tribunal Regional Eleitoral'],
-            ['sigla' => 'TRF', 'name' => 'Tribunal Regional Federal'],
-            ['sigla' => 'TSE', 'name' => 'Tribunal Superior Eleitoral']
-        ]);
+        IdentidadeOrgao::create(['sigla' => 'ABNC', 'name' => 'Academia Brasileira de Neurocirurgia']);
+        IdentidadeOrgao::create(['sigla' => 'AGU', 'name' => 'Advocacia-Geral da União']);
+        IdentidadeOrgao::create(['sigla' => 'ANAC', 'name' => 'Agência Nacional de Aviação Civil']);
+        IdentidadeOrgao::create(['sigla' => 'CAER', 'name' => 'Clube de Aeronáutica']);
+        IdentidadeOrgao::create(['sigla' => 'CAU', 'name' => 'Conselho de Arquitetura e Urbanismo']);
+        IdentidadeOrgao::create(['sigla' => 'CBM', 'name' => 'Corpo de Bombeiro Militar']);
+        IdentidadeOrgao::create(['sigla' => 'CFA', 'name' => 'Conselho Federal Administração']);
+        IdentidadeOrgao::create(['sigla' => 'CFB', 'name' => 'Conselho Federal de Biblioteconomia']);
+        IdentidadeOrgao::create(['sigla' => 'CFBIO', 'name' => 'Conselho Federal de Biologia']);
+        IdentidadeOrgao::create(['sigla' => 'CFBM', 'name' => 'Conselho Federal de Biomedicina']);
+        IdentidadeOrgao::create(['sigla' => 'CFC', 'name' => 'Conselho Federal de Contabilidade']);
+        IdentidadeOrgao::create(['sigla' => 'CFESS', 'name' => 'Conselho Federal de Serviço Social']);
+        IdentidadeOrgao::create(['sigla' => 'CFF', 'name' => 'Conselho Regional de Farmácia']);
+        IdentidadeOrgao::create(['sigla' => 'CFFA', 'name' => 'Conselho Federal de Fonoaudiologia']);
+        IdentidadeOrgao::create(['sigla' => 'CFM', 'name' => 'Conselho Federal de Medicina']);
+        IdentidadeOrgao::create(['sigla' => 'CFMV', 'name' => 'Conselho Federal de Medicina Veterinária']);
+        IdentidadeOrgao::create(['sigla' => 'CFN', 'name' => 'Conselho Federal de Nutrição']);
+        IdentidadeOrgao::create(['sigla' => 'CFO', 'name' => 'Conselho Federal de Odontologia']);
+        IdentidadeOrgao::create(['sigla' => 'CFP', 'name' => 'Conselho Federal de Psicologia']);
+        IdentidadeOrgao::create(['sigla' => 'CFQ', 'name' => 'Conselho Regional de Química']);
+        IdentidadeOrgao::create(['sigla' => 'CFT', 'name' => 'Conselho Federal dos Técnicos Industriais']);
+        IdentidadeOrgao::create(['sigla' => 'CFTA', 'name' => 'Conselho Federal dos Técnicos Agrícolas']);
+        IdentidadeOrgao::create(['sigla' => 'CGPI', 'name' => 'Coordenação Geral de Privilégios e Imunidades']);
+        IdentidadeOrgao::create(['sigla' => 'CGPMAF', 'name' => 'Coordenadoria Geral de Polícia Marítima, Aeronáutica e de Fronteiras']);
+        IdentidadeOrgao::create(['sigla' => 'CIPC', 'name' => 'Centro de Inteligência da Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'CNIG', 'name' => 'Conselho Nacional de Imigração']);
+        IdentidadeOrgao::create(['sigla' => 'CNT', 'name' => 'Confederação Nacional do Transporte']);
+        IdentidadeOrgao::create(['sigla' => 'CNTV', 'name' => 'Confederação Nacional de Vigilantes & Prestadores de Serviços']);
+        IdentidadeOrgao::create(['sigla' => 'COFECI', 'name' => 'Conselho Federal de Corretores de Imóveis']);
+        IdentidadeOrgao::create(['sigla' => 'COFECON', 'name' => 'Conselho Federal de Economia']);
+        IdentidadeOrgao::create(['sigla' => 'COFEM', 'name' => 'Conselho Federal de Museologia']);
+        IdentidadeOrgao::create(['sigla' => 'COFEN', 'name' => 'Conselho Federal de Enfermagem']);
+        IdentidadeOrgao::create(['sigla' => 'COFFITO', 'name' => 'Conselho Regional de Fisioterapia e Terapia Ocupacional']);
+        IdentidadeOrgao::create(['sigla' => 'COMAER', 'name' => 'Comando da Aeronáutica']);
+        IdentidadeOrgao::create(['sigla' => 'CONFE', 'name' => 'Conselho Federal de Estatística']);
+        IdentidadeOrgao::create(['sigla' => 'CONFEA', 'name' => 'Conselho Federal de Engenharia e Agronomia']);
+        IdentidadeOrgao::create(['sigla' => 'CONFEF', 'name' => 'Conselho Federal de Educação Física']);
+        IdentidadeOrgao::create(['sigla' => 'CONFERE', 'name' => 'Conselho Federal dos Representantes Comerciais']);
+        IdentidadeOrgao::create(['sigla' => 'CONRE', 'name' => 'Conselho Regional de Estatística']);
+        IdentidadeOrgao::create(['sigla' => 'CONRERP', 'name' => 'Conselho Federal de Profissionais de Relações Públicas']);
+        IdentidadeOrgao::create(['sigla' => 'CORE', 'name' => 'Conselho Regional dos Representantes Comerciais']);
+        IdentidadeOrgao::create(['sigla' => 'CORECON', 'name' => 'Conselho Regional de Economia']);
+        IdentidadeOrgao::create(['sigla' => 'COREM', 'name' => 'Conselho Regional de Museologia']);
+        IdentidadeOrgao::create(['sigla' => 'COREN', 'name' => 'Conselho Regional de Enfermagem']);
+        IdentidadeOrgao::create(['sigla' => 'CRA', 'name' => 'Conselho Regional de Administração']);
+        IdentidadeOrgao::create(['sigla' => 'CRAS', 'name' => 'Centro de Referência de Assistência Social']);
+        IdentidadeOrgao::create(['sigla' => 'CRB', 'name' => 'Conselho Regional de Biblioteconomia']);
+        IdentidadeOrgao::create(['sigla' => 'CRBIO', 'name' => 'Conselho Regional de Biologia']);
+        IdentidadeOrgao::create(['sigla' => 'CRBM', 'name' => 'Conselho Regional de Biomedicina']);
+        IdentidadeOrgao::create(['sigla' => 'CRC', 'name' => 'Conselho Regional de Contabilidade']);
+        IdentidadeOrgao::create(['sigla' => 'CREA', 'name' => 'Conselho Regional de Engenharia e Agronomia']);
+        IdentidadeOrgao::create(['sigla' => 'CRECI', 'name' => 'Conselho Regional de Corretores de Imóveis']);
+        IdentidadeOrgao::create(['sigla' => 'CREF', 'name' => 'Conselho Regional de Educação Física']);
+        IdentidadeOrgao::create(['sigla' => 'CREFITO', 'name' => 'Conselho Regional de Fisioterapia e Terapia Ocupacional']);
+        IdentidadeOrgao::create(['sigla' => 'CRESS', 'name' => 'Conselho Regional de Serviço Social']);
+        IdentidadeOrgao::create(['sigla' => 'CRF', 'name' => 'Conselho Regional de Farmácia']);
+        IdentidadeOrgao::create(['sigla' => 'CRFA', 'name' => 'Conselho Regional de Fonoaudiologia']);
+        IdentidadeOrgao::create(['sigla' => 'CRM', 'name' => 'Conselho Regional de Medicina']);
+        IdentidadeOrgao::create(['sigla' => 'CRMV', 'name' => 'Conselho Regional de Medicina Veterinária']);
+        IdentidadeOrgao::create(['sigla' => 'CRN', 'name' => 'Conselho Regional de Nutrição']);
+        IdentidadeOrgao::create(['sigla' => 'CRO', 'name' => 'Conselho Regional de Odontologia']);
+        IdentidadeOrgao::create(['sigla' => 'CRP', 'name' => 'Conselho Regional de Psicologia']);
+        IdentidadeOrgao::create(['sigla' => 'CRPRE', 'name' => 'Conselho Regional de Profissionais de Relações Públicas']);
+        IdentidadeOrgao::create(['sigla' => 'CRQ', 'name' => 'Conselho Regional de Química']);
+        IdentidadeOrgao::create(['sigla' => 'CRT', 'name' => 'Conselho Regional dos Técnicos Industriais']);
+        IdentidadeOrgao::create(['sigla' => 'CRTA', 'name' => 'Conselho Regional de Técnicos de Administração']);
+        IdentidadeOrgao::create(['sigla' => 'CTPS', 'name' => 'Carteira de Trabalho e Previdência Social']);
+        IdentidadeOrgao::create(['sigla' => 'CV', 'name' => 'Cartório Civil']);
+        IdentidadeOrgao::create(['sigla' => 'DELEMIG', 'name' => 'Delegacia de Polícia de Imigração']);
+        IdentidadeOrgao::create(['sigla' => 'DETRAN', 'name' => 'Departamento Estadual de Trânsito']);
+        IdentidadeOrgao::create(['sigla' => 'DGPC', 'name' => 'Diretoria Geral da Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'DIC', 'name' => 'Diretoria de Identificação Civil']);
+        IdentidadeOrgao::create(['sigla' => 'DICC', 'name' => 'Diretoria de Identificação Civil e Criminal']);
+        IdentidadeOrgao::create(['sigla' => 'DIREX', 'name' => 'Diretoria Executiva']);
+        IdentidadeOrgao::create(['sigla' => 'DPF', 'name' => 'Departamento de Polícia Federal']);
+        IdentidadeOrgao::create(['sigla' => 'DPMAF', 'name' => 'Divisão de Polícia Marítima, Aérea e de Fronteiras']);
+        IdentidadeOrgao::create(['sigla' => 'DPT', 'name' => 'Departamento de Polícia Técnica Geral']);
+        IdentidadeOrgao::create(['sigla' => 'DPTC', 'name' => 'Departamento de Polícia Técnico Científica']);
+        IdentidadeOrgao::create(['sigla' => 'DREX', 'name' => 'Delegacia Regional Executiva']);
+        IdentidadeOrgao::create(['sigla' => 'DRT', 'name' => 'Delegacia Regional do Trabalho']);
+        IdentidadeOrgao::create(['sigla' => 'EB', 'name' => 'Exército Brasileiro']);
+        IdentidadeOrgao::create(['sigla' => 'FAB', 'name' => 'Força Aérea Brasileira']);
+        IdentidadeOrgao::create(['sigla' => 'FENAJ', 'name' => 'Federação Nacional dos Jornalistas']);
+        IdentidadeOrgao::create(['sigla' => 'FGTS', 'name' => 'Fundo de Garantia do Tempo de Serviço']);
+        IdentidadeOrgao::create(['sigla' => 'FIPE', 'name' => 'Fundação Instituto de Pesquisas Econômicas']);
+        IdentidadeOrgao::create(['sigla' => 'FLS', 'name' => 'Fundação Lyndolpho Silva']);
+        IdentidadeOrgao::create(['sigla' => 'FUNAI', 'name' => 'Fundação Nacional do Índio']);
+        IdentidadeOrgao::create(['sigla' => 'GEJSP', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'GEJSPC', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'GEJUSPC', 'name' => 'Gerência de Estado de Justiça, Segurança Pública e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'GESP', 'name' => 'Gerência de Estado de Segurança Pública']);
+        IdentidadeOrgao::create(['sigla' => 'GOVGO', 'name' => 'Governo do Estado de Goiás']);
+        IdentidadeOrgao::create(['sigla' => 'I CLA', 'name' => 'Carteira de Identidade Classista']);
+        IdentidadeOrgao::create(['sigla' => 'ICP', 'name' => 'Instituto de Polícia Científica']);
+        IdentidadeOrgao::create(['sigla' => 'IDAMP', 'name' => 'Instituto de Identificação Dr. Aroldo Mendes Paiva']);
+        IdentidadeOrgao::create(['sigla' => 'IFP', 'name' => 'Instituto Félix Pacheco']);
+        IdentidadeOrgao::create(['sigla' => 'IGP', 'name' => 'Instituto Geral de Perícias']);
+        IdentidadeOrgao::create(['sigla' => 'IIACM', 'name' => 'Instituto de Identificação Aderson Conceição de Melo']);
+        IdentidadeOrgao::create(['sigla' => 'IICC', 'name' => 'Instituto de Identificação Civil e Criminal']);
+        IdentidadeOrgao::create(['sigla' => 'IICCECF', 'name' => 'Instituto de Identificação Civil e Criminal Engrácia da Costa Francisco']);
+        IdentidadeOrgao::create(['sigla' => 'IICM', 'name' => 'Instituto de Identificação Carlos Menezes']);
+        IdentidadeOrgao::create(['sigla' => 'IIGP', 'name' => 'Instituto de Identificação Gonçalo Pereira']);
+        IdentidadeOrgao::create(['sigla' => 'IIJDM', 'name' => 'Instituto de Identificação João de Deus Martins']);
+        IdentidadeOrgao::create(['sigla' => 'IIPC', 'name' => 'Instituto de Identificação da Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'IIPC', 'name' => 'Instituto de Identificação Pedro Mello']);
+        IdentidadeOrgao::create(['sigla' => 'IIRGD', 'name' => 'Instituto de Identificação Ricardo Gumbleton Daunt']);
+        IdentidadeOrgao::create(['sigla' => 'IIRHM', 'name' => 'Instituto de Identificação Raimundo Hermínio de Melo']);
+        IdentidadeOrgao::create(['sigla' => 'IITB', 'name' => 'Instituto de Identificação Tavares Buril']);
+        IdentidadeOrgao::create(['sigla' => 'IML', 'name' => 'Instituto Médico-Legal']);
+        IdentidadeOrgao::create(['sigla' => 'INI', 'name' => 'Instituto Nacional de Identificação']);
+        IdentidadeOrgao::create(['sigla' => 'IPF', 'name' => 'Instituto Pereira Faustino']);
+        IdentidadeOrgao::create(['sigla' => 'ITCP', 'name' => 'Instituto Técnico-Científico de Perícia']);
+        IdentidadeOrgao::create(['sigla' => 'ITEP', 'name' => 'Instituto Técnico-Científico de Perícia']);
+        IdentidadeOrgao::create(['sigla' => 'MAER', 'name' => 'Ministério da Aeronáutica']);
+        IdentidadeOrgao::create(['sigla' => 'MB', 'name' => 'Marinha do Brasil']);
+        IdentidadeOrgao::create(['sigla' => 'MD', 'name' => 'Ministério da Defesa']);
+        IdentidadeOrgao::create(['sigla' => 'MDS', 'name' => 'Ministério da Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'MEC', 'name' => 'Ministério da Educação e Cultura']);
+        IdentidadeOrgao::create(['sigla' => 'MEX', 'name' => 'Ministério do Exército']);
+        IdentidadeOrgao::create(['sigla' => 'MINDEF', 'name' => 'Ministério da Defesa']);
+        IdentidadeOrgao::create(['sigla' => 'MJ', 'name' => 'Ministério da Justiça']);
+        IdentidadeOrgao::create(['sigla' => 'MM', 'name' => 'Ministério da Marinha']);
+        IdentidadeOrgao::create(['sigla' => 'MMA', 'name' => 'Ministério da Marinha']);
+        IdentidadeOrgao::create(['sigla' => 'MPAS', 'name' => 'Ministério da Previdência e Assistência Social']);
+        IdentidadeOrgao::create(['sigla' => 'MPE', 'name' => 'Ministério Público Estadual']);
+        IdentidadeOrgao::create(['sigla' => 'MPF', 'name' => 'Ministério Público Federal']);
+        IdentidadeOrgao::create(['sigla' => 'MPT', 'name' => 'Ministério Público do Trabalho']);
+        IdentidadeOrgao::create(['sigla' => 'MRE', 'name' => 'Ministério das Relações Exteriores']);
+        IdentidadeOrgao::create(['sigla' => 'MT', 'name' => 'Ministério do Trabalho']);
+        IdentidadeOrgao::create(['sigla' => 'MTE', 'name' => 'Ministério da Economia']);
+        IdentidadeOrgao::create(['sigla' => 'MTPS', 'name' => 'Ministério do Trabalho e Previdência Social']);
+        IdentidadeOrgao::create(['sigla' => 'NUMIG', 'name' => 'Núcleo de Polícia de Imigração']);
+        IdentidadeOrgao::create(['sigla' => 'OAB', 'name' => 'Ordem dos Advogados do Brasil']);
+        IdentidadeOrgao::create(['sigla' => 'OMB', 'name' => 'Ordens dos Músicos do Brasil']);
+        IdentidadeOrgao::create(['sigla' => 'PC', 'name' => 'Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'PF', 'name' => 'Polícia Federal']);
+        IdentidadeOrgao::create(['sigla' => 'PGFN', 'name' => 'Procuradoria Geral da Fazenda Nacional']);
+        IdentidadeOrgao::create(['sigla' => 'PM', 'name' => 'Polícia Militar']);
+        IdentidadeOrgao::create(['sigla' => 'POLITEC', 'name' => 'Perícia Oficial e Identificação Técnica']);
+        IdentidadeOrgao::create(['sigla' => 'PRF', 'name' => 'Polícia Rodoviária Federal']);
+        IdentidadeOrgao::create(['sigla' => 'PTC', 'name' => 'Polícia Tecnico-Científica']);
+        IdentidadeOrgao::create(['sigla' => 'SCC', 'name' => 'Secretaria de Estado da Casa Civil']);
+        IdentidadeOrgao::create(['sigla' => 'SCJDS', 'name' => 'Secretaria Coordenadora de Justiça e Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SDS', 'name' => 'Secretaria de Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SECC', 'name' => 'Secretaria de Estado da Casa Civil']);
+        IdentidadeOrgao::create(['sigla' => 'SECCDE', 'name' => 'Secretaria de Estado da Casa Civil e Desenvolvimento Econômico']);
+        IdentidadeOrgao::create(['sigla' => 'SEDS', 'name' => 'Secretaria de Estado da Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SEGUP', 'name' => 'Secretaria de Estado da Segurança Pública e da Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SEJSP', 'name' => 'Secretaria de Estado de Justiça e Segurança Pública']);
+        IdentidadeOrgao::create(['sigla' => 'SEJUC', 'name' => 'Secretaria de Estado da Justica']);
+        IdentidadeOrgao::create(['sigla' => 'SEJUSP', 'name' => 'Secretaria de Estado de Justiça e Segurança Pública']);
+        IdentidadeOrgao::create(['sigla' => 'SEPC', 'name' => 'Secretaria de Estado da Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'SES', 'name' => 'Secretaria de Estado da Segurança']);
+        IdentidadeOrgao::create(['sigla' => 'SESC', 'name' => 'Secretaria de Estado da Segurança e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'SESDC', 'name' => 'Secretaria de Estado da Segurança, Defesa e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'SESDEC', 'name' => 'Secretaria de Estado da Segurança, Defesa e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'SESEG', 'name' => 'Secretaria Estadual de Segurança']);
+        IdentidadeOrgao::create(['sigla' => 'SESP', 'name' => 'Secretaria de Estado da Segurança Pública']);
+        IdentidadeOrgao::create(['sigla' => 'SESPAP', 'name' => 'Secretaria de Estado da Segurança Pública e Administração Penitenciária']);
+        IdentidadeOrgao::create(['sigla' => 'SESPDC', 'name' => 'Secretaria de Estado de Segurança Publica e Defesa do Cidadão']);
+        IdentidadeOrgao::create(['sigla' => 'SESPDS', 'name' => 'Secretaria de Estado de Segurança Pública e Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SGPC', 'name' => 'Superintendência Geral de Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'SGPJ', 'name' => 'Superintendência Geral de Polícia Judiciária']);
+        IdentidadeOrgao::create(['sigla' => 'SIM', 'name' => 'Serviço de Identificação da Marinha']);
+        IdentidadeOrgao::create(['sigla' => 'SJ', 'name' => 'Secretaria da Justiça']);
+        IdentidadeOrgao::create(['sigla' => 'SJCDH', 'name' => 'Secretaria da Justiça e dos Direitos Humanos']);
+        IdentidadeOrgao::create(['sigla' => 'SJDS', 'name' => 'Secretaria Coordenadora de Justiça e Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SJS', 'name' => 'Secretaria da Justiça e Segurança']);
+        IdentidadeOrgao::create(['sigla' => 'SJTC', 'name' => 'Secretaria da Justiça do Trabalho e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'SJTS', 'name' => 'Secretaria da Justiça do Trabalho e Segurança']);
+        IdentidadeOrgao::create(['sigla' => 'SNJ', 'name' => 'Secretaria Nacional de Justiça / Departamento de Estrangeiros']);
+        IdentidadeOrgao::create(['sigla' => 'SPMAF', 'name' => 'Serviço de Polícia Marítima, Aérea e de Fronteiras']);
+        IdentidadeOrgao::create(['sigla' => 'SPTC', 'name' => 'Secretaria de Polícia Técnico-Científica']);
+        IdentidadeOrgao::create(['sigla' => 'SRDPF', 'name' => 'Superintendência Regional do Departamento de Polícia Federal']);
+        IdentidadeOrgao::create(['sigla' => 'SRF', 'name' => 'Receita Federal']);
+        IdentidadeOrgao::create(['sigla' => 'SRTE', 'name' => 'Superintendência Regional do Trabalho']);
+        IdentidadeOrgao::create(['sigla' => 'SSDC', 'name' => 'Secretaria da Segurança, Defesa e Cidadania']);
+        IdentidadeOrgao::create(['sigla' => 'SSDS', 'name' => 'Secretaria da Segurança e da Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SSI', 'name' => 'Secretaria de Segurança e Informações']);
+        IdentidadeOrgao::create(['sigla' => 'SSP', 'name' => 'Secretaria de Segurança Pública']);
+        IdentidadeOrgao::create(['sigla' => 'SSPCGP', 'name' => 'Secretaria de Segurança Pública e Coordenadoria Geral de Perícias']);
+        IdentidadeOrgao::create(['sigla' => 'SSPDC', 'name' => 'Secretaria de Segurança Pública e Defesa do Cidadão']);
+        IdentidadeOrgao::create(['sigla' => 'SSPDS', 'name' => 'Secretaria de Segurança Pública e Defesa Social']);
+        IdentidadeOrgao::create(['sigla' => 'SSPPC', 'name' => 'Secretaria de Segurança Pública Polícia Civil']);
+        IdentidadeOrgao::create(['sigla' => 'SUSEP', 'name' => 'Superintendência de Seguros Privados']);
+        IdentidadeOrgao::create(['sigla' => 'SUSEPE', 'name' => 'Superintendência dos Serviços Penitenciários']);
+        IdentidadeOrgao::create(['sigla' => 'TJ', 'name' => 'Tribunal de Justiça']);
+        IdentidadeOrgao::create(['sigla' => 'TJAEM', 'name' => 'Tribunal Arbitral e Mediação dos Estados Brasileiros']);
+        IdentidadeOrgao::create(['sigla' => 'TRE', 'name' => 'Tribunal Regional Eleitoral']);
+        IdentidadeOrgao::create(['sigla' => 'TRF', 'name' => 'Tribunal Regional Federal']);
+        IdentidadeOrgao::create(['sigla' => 'TSE', 'name' => 'Tribunal Superior Eleitoral']);
     }
 }

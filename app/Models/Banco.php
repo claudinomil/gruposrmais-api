@@ -15,8 +15,8 @@ class Banco extends Model
         'name'
     ];
 
-    public function setServidorAttribute($value)
+    public function setAttribute($attribute, $value)
     {
-        $this->attributes['servidor'] = mb_strtoupper($value);
+        $this->attributes[$attribute] = mb_strtoupper($value);
     }
 }

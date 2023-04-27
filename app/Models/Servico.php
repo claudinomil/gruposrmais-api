@@ -16,4 +16,6 @@ class Servico extends Model
         'servico_tipo_id',
         'valor'
     ];
+
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
 }

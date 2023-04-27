@@ -25,6 +25,7 @@ use App\Models\Situacao;
 use App\Models\Submodulo;
 use App\Models\Ferramenta;
 use App\Models\User;
+use App\Models\VisitaTecnica;
 use App\Observers\BancoObserver;
 use App\Observers\DepartamentoObserver;
 use App\Observers\FornecedorObserver;
@@ -49,6 +50,7 @@ use App\Observers\SubmoduloObserver;
 use App\Observers\FerramentaObserver;
 use App\Observers\UserObserver;
 
+use App\Observers\VisitaTecnicaObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -86,6 +88,7 @@ class EventServiceProvider extends ServiceProvider
         Submodulo::observe(SubmoduloObserver::class);
         User::observe(UserObserver::class);
         Proposta::observe(PropostaObserver::class);
+        VisitaTecnica::observe(VisitaTecnicaObserver::class);
     }
 
     public function shouldDiscoverEvents()

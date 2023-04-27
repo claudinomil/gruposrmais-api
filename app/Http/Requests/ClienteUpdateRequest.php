@@ -64,11 +64,7 @@ class ClienteUpdateRequest extends FormRequest
             'banco_id' => ['nullable', 'integer', 'numeric'],
             'agencia' => ['nullable', 'numeric', 'min:2'],
             'conta' => ['nullable', 'numeric', 'min:3'],
-            'email' => [
-                'nullable',
-                Rule::unique('clientes')->ignore($this->id),
-                'email'
-            ],
+            'email' => ['email'],
             'site' => [
                 'nullable',
                 Rule::unique('clientes')->ignore($this->id),
@@ -116,7 +112,6 @@ class ClienteUpdateRequest extends FormRequest
             'agencia.min' => 'A Agência deve ter pelo menos 2 caracteres.',
             'conta.numeric' => 'A Conta deve ser um número.',
             'conta.min' => 'A Conta deve ter pelo menos 3 caracteres.',
-            'email.unique' => 'O E-mail já existe.',
             'email.email' => 'O E-mail deve ser um endereço válido.',
             'site.unique' => 'O Site já existe.',
             'site.site' => 'O Site deve ser um endereço válido.',
