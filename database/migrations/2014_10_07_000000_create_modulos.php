@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('menu_url')->unique();
             $table->string('menu_route')->unique();
             $table->string('menu_icon')->unique();
+            $table->integer('mobile')->default(0);
             $table->integer('viewing_order');
             $table->timestamps();
             $table->softDeletes();

@@ -22,17 +22,20 @@ class DatabaseSeeder extends Seeder
             EscolaridadesSeeder::class,
             TelefoneDddsSeeder::class,
             TelefoneDdisSeeder::class,
+            FuncionariosSeeder::class,
             GruposSeeder::class,
             IconsSeeder::class,
             PermissoesSeeder::class,
             GrupoPermissoesSeeder::class,
             SituacoesSeeder::class,
             OperacoesSeeder::class,
+            SistemaAcessosSeeder::class,
             EstadosSeeder::class,
             UsersSeeder::class,
             SegurancaMedidasSeeder::class,
             EdificacaoClassificacoesSeeder::class,
             IncendioRiscosSeeder::class,
+            VisitaTecnicaStatusSeeder::class,
         ]);
     }
 }

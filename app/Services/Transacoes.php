@@ -16,11 +16,13 @@ use App\Models\Naturalidade;
 use App\Models\Funcao;
 use App\Models\Escolaridade;
 use App\Models\ServicoTipo;
+use App\Models\SistemaAcesso;
 use App\Models\Situacao;
 use App\Models\Estado;
 use App\Models\Transacao;
 use App\Models\User;
 
+use App\Models\VisitaTecnicaStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -276,6 +278,18 @@ class Transacoes
                 if (($laterData['funcionario_id'] != "") and ($laterData['funcionario_id'] != 0)) {
                     $search = Funcionario::where('id', $laterData['funcionario_id'])->get(['name']);
                     $dados .= $x . "Funcionário: " . $y . $search[0]['name'] . "<br>";
+                }
+
+                if ($beforeData['sistema_acesso_id'] != $laterData['sistema_acesso_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['sistema_acesso_id'] != "") and ($laterData['sistema_acesso_id'] != 0)) {
+                    $search = SistemaAcesso::where('id', $laterData['sistema_acesso_id'])->get(['name']);
+                    $dados .= $x . "Sistema Acesso: " . $y . $search[0]['name'] . "<br>";
                 }
             }
 
@@ -1873,20 +1887,20 @@ class Transacoes
                 $dados .= $x . "Generalidade 10: " . $y . $laterData['paragrafo_10'] . "<br>";
             }
 
-            //Segurança Medidas
+            //Visitas Técnicas
             if ($submodulo_id == 27) {
-                if ($beforeData['name'] != $laterData['name']) {
+                if ($beforeData['visita_tecnica_status_id'] != $laterData['visita_tecnica_status_id']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
                 } else {
                     $x = "";
                     $y = "";
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-            }
+                if (($laterData['visita_tecnica_status_id'] != "") and ($laterData['visita_tecnica_status_id'] != 0)) {
+                    $search = VisitaTecnicaStatus::where('id', $laterData['visita_tecnica_status_id'])->get(['name']);
+                    $dados .= $x . "Status: " . $y . $search[0]['name'] . "<br>";
+                }
 
-            //Visitas Técnicas
-            if ($submodulo_id == 28) {
                 if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
                     $x = "<font class='text-danger'>";
                     $y = "</font>";
@@ -1907,6 +1921,18 @@ class Transacoes
                     $y = "";
                 }
                 $dados .= $x . "Data Visita: " . $y . $laterData['data_visita'] . "<br>";
+
+                if ($beforeData['responsavel_funcionario_id'] != $laterData['responsavel_funcionario_id']) {
+                    $x = "<font class='text-danger'>";
+                    $y = "</font>";
+                } else {
+                    $x = "";
+                    $y = "";
+                }
+                if (($laterData['responsavel_funcionario_id'] != "") and ($laterData['responsavel_funcionario_id'] != 0)) {
+                    $search = Funcionario::where('id', $laterData['responsavel_funcionario_id'])->get(['name']);
+                    $dados .= $x . "Responsavel: " . $y . $search[0]['name'] . "<br>";
+                }
             }
 
             //gravar transacao'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

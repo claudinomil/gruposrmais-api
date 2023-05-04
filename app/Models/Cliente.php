@@ -60,8 +60,11 @@ class Cliente extends Model
         'carga_incendio',
         'incendio_risco_id',
         'edificacao_classificacao_id',
+        'projeto_scip',
         'laudo_exigencias',
-        'certificado_aprovacao'
+        'certificado_aprovacao',
+        'certificado_aprovacao_simplificado',
+        'certificado_aprovacao_assistido'
     ];
 
     protected $dates = [

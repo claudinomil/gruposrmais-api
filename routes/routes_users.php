@@ -19,6 +19,9 @@ Route::prefix('users')->group(function () {
     Route::put('/editemail/{id}', [UserController::class, 'editEmail'])->middleware(['auth:api', 'scope:claudino']);
     Route::put('/editmodestyle/{id}', [UserController::class, 'editmodestyle'])->middleware(['auth:api', 'scope:claudino']);
 
+    //Usuário - retorna dados do usuário logado
+    Route::get('/user/logged/data', [UserController::class, 'userLoggedData'])->middleware(['auth:api', 'scope:claudino']);
+
     //Usuário - retorna dados e permissões
     Route::get('/user/permissoes/settings/{searchSubmodulo}', [UserController::class, 'userPermissoesSettings'])->middleware(['auth:api', 'scope:claudino']);
     //Route::get('/user/permissoes/settings/{searchSubmodulo}', [UserController::class, 'userPermissoesSettings']);

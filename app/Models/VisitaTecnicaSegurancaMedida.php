@@ -13,7 +13,9 @@ class VisitaTecnicaSegurancaMedida extends Model
     protected $table = 'visitas_tecnicas_seguranca_medidas';
 
     protected $fillable = [
+        'pavimento',
         'visita_tecnica_id',
-        'seguranca_medida_id'
+        'seguranca_medida_id',
+        'seguranca_medida_nome'
     ];
 }

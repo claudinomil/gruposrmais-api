@@ -13,8 +13,6 @@ Route::prefix('visitas_tecnicas')->group(function () {
 
     Route::get('/auxiliary/tables', [VisitaTecnicaController::class, 'auxiliary'])->middleware(['auth:api', 'scope:claudino']);
 
-    Route::put('/updatefoto/{id}', [VisitaTecnicaController::class, 'updateFoto'])->middleware(['auth:api', 'scope:claudino']);
-
     Route::get('/extradata/{id}', [VisitaTecnicaController::class, 'extraData'])->middleware(['auth:api', 'scope:claudino']);
 
     Route::get('/medidas_seguranca/{np}/{atc}/{grupo}/{divisao}', [VisitaTecnicaController::class, 'medidas_seguranca'])->middleware(['auth:api', 'scope:claudino']);

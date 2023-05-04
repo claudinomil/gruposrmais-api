@@ -24,6 +24,7 @@ class User extends Authenticatable
         'grupo_id',
         'situacao_id',
         'funcionario_id',
+        'sistema_acesso_id',
         'user_confirmed_at'
     ];
 

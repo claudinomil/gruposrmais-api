@@ -9,6 +9,7 @@ use App\Models\Funcionario;
 use App\Models\Grupo;
 use App\Models\Modulo;
 use App\Models\Notificacao;
+use App\Models\SistemaAcesso;
 use App\Models\Situacao;
 use App\Models\Submodulo;
 use App\Models\Ferramenta;
@@ -70,6 +71,9 @@ class UserController extends Controller
 
             //Funcionários
             $registros['funcionarios'] = Funcionario::all();
+
+            //Sistema Acessos
+            $registros['sistema_acessos'] = SistemaAcesso::all();
 
             return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registros), 200);
         } catch (\Exception $e) {
@@ -344,10 +348,16 @@ class UserController extends Controller
                     ->get();
 
                 //Menu Módulos
-                $registros['menuModulos'] = Modulo::where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+                $registros['menuModulos'] = Modulo::where('mobile', '=', '0')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
 
                 //Menu Submódulos
-                $registros['menuSubmodulos'] = Submodulo::where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+                $registros['menuSubmodulos'] = Submodulo::where('mobile', '=', '0')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+
+                //Menu Módulos Mobile
+                $registros['menuModulosMobile'] = Modulo::where('mobile', '=', '1')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+
+                //Menu Submódulos Mobile
+                $registros['menuSubmodulosMobile'] = Submodulo::where('mobile', '=', '1')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
 
                 //Ferramentas
                 $registros['ferramentas'] = DB::table('ferramentas')
@@ -390,10 +400,37 @@ class UserController extends Controller
                 $registros['ajaxNameSubmodulo'] = Submodulo::select('name')->where('menu_route', '=', $searchSubmodulo)->get();
 
                 //Submódulo nome dos campos
+
+                //verificar se veio de um submódulo MOBILE e, se precisa trocar nome para buscar campos da tabela
+                if (substr($searchSubmodulo, 0 , 7) == 'mobile_') {$searchSubmodulo = substr($searchSubmodulo, 7);}
+
                 $registros['ajaxNamesFieldsSubmodulo'] = Schema::getColumnListing($searchSubmodulo);
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
+            }
+        } catch (\Exception $e) {
+            if (config('app.debug')) {
+                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
+            }
+
+            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
+        }
+    }
+
+    public function userLoggedData()
+    {
+        try {
+            if (!Auth::check()) {
+                return response()->json(ApiReturn::data('Usuário não está logado.', 4040, null, null), 404);
+            } else {
+                //Cria array
+                $registro = array();
+
+                //Dados Usuário Logado
+                $registro['userData'] = Auth::user();
+
+                return response()->json(ApiReturn::data('Registro enviada com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
             if (config('app.debug')) {

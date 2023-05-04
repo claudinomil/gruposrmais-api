@@ -63,8 +63,12 @@ class CreateClientesTable extends Migration
             $table->integer('carga_incendio')->nullable();
             $table->foreignId('incendio_risco_id')->nullable()->constrained('incendio_riscos');
             $table->foreignId('edificacao_classificacao_id')->nullable()->constrained('edificacao_classificacoes');
+
+            $table->integer('projeto_scip')->nullable();
             $table->integer('laudo_exigencias')->nullable();
             $table->integer('certificado_aprovacao')->nullable();
+            $table->integer('certificado_aprovacao_simplificado')->nullable();
+            $table->integer('certificado_aprovacao_assistido')->nullable();
 
             $table->timestamps();
         });

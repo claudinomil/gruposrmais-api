@@ -15,15 +15,37 @@ class VisitaTecnica extends Model
 
     protected $fillable = [
         'data_visita',
+        'visita_tecnica_status_id',
         'cliente_id',
-        'user_id'
+        'responsavel_funcionario_id',
+        'numero_pavimentos',
+        'altura',
+        'area_total_construida',
+        'lotacao',
+        'carga_incendio',
+        'incendio_risco',
+        'grupo',
+        'ocupacao_uso',
+        'divisao',
+        'descricao',
+        'definicao',
+        'projeto_scip',
+        'projeto_scip_numero',
+        'laudo_exigencias',
+        'laudo_exigencias_numero',
+        'laudo_exigencias_data_emissao',
+        'laudo_exigencias_data_vencimento',
+        'certificado_aprovacao',
+        'certificado_aprovacao_numero',
+        'certificado_aprovacao_simplificado',
+        'certificado_aprovacao_simplificado_numero',
+        'certificado_aprovacao_assistido',
+        'certificado_aprovacao_assistido_numero'
     ];
 
     protected $dates = [
         'data_visita'
     ];
-
-    public function setUserIdAttribute($value) {if ($value == '') {$this->attributes['user_id'] = Auth::user()->id;}}
 
     public function setDataVisitaAttribute($value) {if ($value != '') {$this->attributes['data_visita'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
 }

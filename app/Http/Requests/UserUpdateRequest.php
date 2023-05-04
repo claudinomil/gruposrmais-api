@@ -34,7 +34,8 @@ class UserUpdateRequest extends FormRequest
             'layout_mode' => ['required'],
             'layout_style' => ['required'],
             'grupo_id' => ['required'],
-            'situacao_id' => ['required']
+            'situacao_id' => ['required'],
+            'sistema_acesso_id' => ['required']
         ];
     }
 
@@ -47,7 +48,8 @@ class UserUpdateRequest extends FormRequest
             'layout_mode.required' => 'O Mode é requerido.',
             'layout_style.required' => 'O Estilo é requerido.',
             'grupo_id.required' => 'O Grupo é requerido.',
-            'situacao_id.required' => 'A Situação é requerido.'
+            'situacao_id.required' => 'A Situação é requerido.',
+            'sistema_acesso_id.required' => 'O Sistema Acesso  é requerido.'
         ];
     }
 }

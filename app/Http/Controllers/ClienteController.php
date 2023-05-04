@@ -153,7 +153,6 @@ class ClienteController extends Controller
                 //Alterando registro
                 $registro->update($request->all());
 
-
                 //Apagarr dados na tabela clientes_seguranca_medidas''''''''''''''''''''''''''''''''''''''''''''''''''''
                 ClienteSegurancaMedida::where('cliente_id', '=', $id)->delete();
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -178,6 +177,60 @@ class ClienteController extends Controller
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
+            }
+        } catch (\Exception $e) {
+            if (config('app.debug')) {
+                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
+            }
+
+            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
+        }
+    }
+
+    public function visita_tecnica($id)
+    {
+        try {
+            $registro = $this->cliente->find($id);
+
+            if (!$registro) {
+                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
+            } else {
+                //Buscando Risco Incendio
+                if (isset($registro['incendio_risco_id']) and $registro['incendio_risco_id'] != '') {
+                    $incendio_risco = IncendioRiscos::where('id', '=', $registro['incendio_risco_id'])->get('name');
+                    $registro['incendio_risco'] = $incendio_risco[0]['name'];
+                } else {
+                    $registro['incendio_risco'] = [];
+                }
+
+                //Edificacao Classificacao
+                if (isset($registro['edificacao_classificacao_id']) and $registro['edificacao_classificacao_id'] != '') {
+                    $edificacao_classificacao = EdificacaoClassificacao::where('id', '=', $registro['edificacao_classificacao_id'])->get();
+                    $registro['grupo'] = $edificacao_classificacao[0]['grupo'];
+                    $registro['ocupacao_uso'] = $edificacao_classificacao[0]['ocupacao_uso'];
+                    $registro['divisao'] = $edificacao_classificacao[0]['divisao'];
+                    $registro['descricao'] = $edificacao_classificacao[0]['descricao'];
+                    $registro['definicao'] = $edificacao_classificacao[0]['definicao'];
+                } else {
+                    $registro['grupo'] = '';
+                    $registro['ocupacao_uso'] = '';
+                    $registro['divisao'] = '';
+                    $registro['descricao'] = '';
+                    $registro['definicao'] = '';
+                }
+
+                //buscar dados das medidas de segurança
+                $cliente_seguranca_medidas = DB::table('clientes_seguranca_medidas')
+                    ->leftJoin('seguranca_medidas', 'clientes_seguranca_medidas.seguranca_medida_id', '=', 'seguranca_medidas.id')
+                    ->select(['clientes_seguranca_medidas.*', 'seguranca_medidas.name as segurancaMedidaName'])
+                    ->where('clientes_seguranca_medidas.cliente_id', '=', $id)
+                    ->orderBy('clientes_seguranca_medidas.pavimento')
+                    ->orderBy('seguranca_medidas.name')
+                    ->get();
+
+                $registro['cliente_seguranca_medidas'] = $cliente_seguranca_medidas;
+
+                return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
             if (config('app.debug')) {
@@ -256,6 +309,9 @@ class ClienteController extends Controller
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Apagarr dados na tabela clientes_seguranca_medidas
+                ClienteSegurancaMedida::where('cliente_id', '=', $id)->delete();
+
                 $registro->delete();
 
                 return response()->json(ApiReturn::data('Registro excluído com sucesso.', 2000, null, null), 200);

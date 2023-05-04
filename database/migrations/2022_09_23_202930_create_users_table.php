@@ -26,6 +26,7 @@ class CreateUsersTable extends Migration
             $table->foreignId('grupo_id')->constrained('grupos');
             $table->foreignId('situacao_id')->default(2)->constrained('situacoes');
             $table->foreignId('funcionario_id')->nullable()->constrained('funcionarios');
+            $table->foreignId('sistema_acesso_id')->default(1)->constrained('sistema_acessos');
             $table->rememberToken();
             $table->timestamps();
         });

@@ -16,4 +16,6 @@ Route::prefix('clientes')->group(function () {
     Route::put('/updatefoto/{id}', [ClienteController::class, 'updateFoto'])->middleware(['auth:api', 'scope:claudino']);
 
     Route::get('/extradata/{id}', [ClienteController::class, 'extraData'])->middleware(['auth:api', 'scope:claudino']);
+
+    Route::get('/visita_tecnica/{id}', [ClienteController::class, 'visita_tecnica'])->middleware(['auth:api', 'scope:claudino']);
 });

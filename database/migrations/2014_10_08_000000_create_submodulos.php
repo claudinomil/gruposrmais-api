@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('menu_icon');
             $table->string('prefix_permissao')->unique();
             $table->string('prefix_route')->unique();
+            $table->integer('mobile')->default(0);
             $table->integer('viewing_order');
             $table->timestamps();
             $table->softDeletes();
