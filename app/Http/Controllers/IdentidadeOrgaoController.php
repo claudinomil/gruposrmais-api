@@ -92,12 +92,32 @@ class IdentidadeOrgaoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Fornecedores
+                $qtd = DB::table('fornecedores')->where('identidade_orgao_id', $id)->count();
 
-                //Tabela funcionarios
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Fornecedores.', 2040, null, null), 200);
+                }
+
+                //Tabela Clientes
+                $qtd = DB::table('clientes')->where('identidade_orgao_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Clientes.', 2040, null, null), 200);
+                }
+
+                //Tabela Funcionários
                 $qtd = DB::table('funcionarios')->where('personal_identidade_orgao_id', $id)->count();
 
                 if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em outras tabelas.', 2040, null, null), 200);
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Funcionários.', 2040, null, null), 200);
+                }
+
+                //Tabela Funcionários
+                $qtd = DB::table('funcionarios')->where('professional_identidade_orgao_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Funcionários.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

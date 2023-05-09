@@ -49,6 +49,7 @@ class CreateFuncionariosTable extends Migration
             $table->string('bairro')->nullable();
             $table->string('localidade')->nullable();
             $table->string('uf')->nullable();
+            $table->foreignId('departamento_id')->nullable()->constrained('departamentos');
             $table->foreignId('funcao_id')->nullable()->constrained('funcoes');
             $table->foreignId('banco_id')->nullable()->constrained('bancos');
             $table->string('agencia')->nullable();

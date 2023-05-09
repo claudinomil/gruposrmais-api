@@ -42,7 +42,7 @@ class VisitaTecnicaController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
                 //buscar dados das medidas de segurança
-                $registro['visita_tecnica_seguranca_medidas'] = VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->get();
+                $registro['cliente_seguranca_medidas'] = VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->get();
 
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
@@ -82,44 +82,28 @@ class VisitaTecnicaController extends Controller
     public function store(VisitaTecnicaStoreRequest $request)
     {
         try {
-            //se Status diferente de EXECUDADO
-            if ($request['visita_tecnica_status_id'] != 3) {
-                $dados = array();
+            //Incluindo registro
+            $registro = $this->visita_tecnica->create($request->all());
 
-                $dados['visita_tecnica_status_id'] = $request['visita_tecnica_status_id'];
-                $dados['cliente_id'] = $request['cliente_id'];
-                $dados['data_visita'] = $request['data_visita'];
-                $dados['responsavel_funcionario_id'] = $request['responsavel_funcionario_id'];
+            //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
+            $visita_tecnica_id = $registro['id'];
+            $numero_pavimentos = $request['numero_pavimentos'];
+            $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
 
-                //Incluindo registro
-                $this->visita_tecnica->create($dados);
-            }
+            for ($i = 1; $i <= $numero_pavimentos; $i++) {
+                foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
+                    if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
+                        $data = array();
+                        $data['pavimento'] = $i;
+                        $data['visita_tecnica_id'] = $visita_tecnica_id;
+                        $data['seguranca_medida_id'] = $seguranca_medida_id;
+                        $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
 
-            //se Status igual EXECUDADO
-            if ($request['visita_tecnica_status_id'] == 3) {
-                //Incluindo registro
-                $registro = $this->visita_tecnica->create($request->all());
-
-                //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
-                $visita_tecnica_id = $registro['id'];
-                $numero_pavimentos = $request['numero_pavimentos'];
-                $ids_seguranca_medidas = $request['ids_seguranca_medidas'];
-
-                for ($i = 1; $i <= $numero_pavimentos; $i++) {
-                    foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
-                        if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
-                            $data = array();
-                            $data['pavimento'] = $i;
-                            $data['visita_tecnica_id'] = $visita_tecnica_id;
-                            $data['seguranca_medida_id'] = $seguranca_medida_id;
-                            $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
-
-                            VisitaTecnicaSegurancaMedida::create($data);
-                        }
+                        VisitaTecnicaSegurancaMedida::create($data);
                     }
                 }
-                //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             }
+            //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
@@ -139,52 +123,34 @@ class VisitaTecnicaController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //se Status diferente de EXECUDADO
-                if ($request['visita_tecnica_status_id'] != 3) {
-                    $dados = array();
+                //Alterando registro
+                $registro->update($request->all());
 
-                    $dados['visita_tecnica_status_id'] = $request['visita_tecnica_status_id'];
-                    $dados['cliente_id'] = $request['cliente_id'];
-                    $dados['data_visita'] = $request['data_visita'];
-                    $dados['responsavel_funcionario_id'] = $request['responsavel_funcionario_id'];
+                //Apagarr dados na tabela visitas_tecnicas_seguranca_medidas'''''''''''
+                VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->delete();
+                //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-                    //Alterando registro
-                    $registro->update($dados);
-                }
+                //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
+                $visita_tecnica_id = $id;
+                $numero_pavimentos = $request['numero_pavimentos'];
+                $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
 
-                //se Status igual EXECUDADO
-                if ($request['visita_tecnica_status_id'] == 3) {
-                    //Alterando registro
-                    $registro->update($request->all());
+                for($i=1; $i<=$numero_pavimentos; $i++) {
+                    foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
+                        if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
+                            $data = array();
+                            $data['pavimento'] = $i;
+                            $data['visita_tecnica_id'] = $visita_tecnica_id;
+                            $data['seguranca_medida_id'] = $seguranca_medida_id;
+                            $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
+                            $data['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
+                            $data['seguranca_medida_observacoes'] = $request['seguranca_medida_observacoes_' . $i . '_' . $seguranca_medida_id];
 
-                    //Apagarr dados na tabela visitas_tecnicas_seguranca_medidas'''''''''''
-                    VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->delete();
-                    //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-                    //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
-                    $visita_tecnica_id = $id;
-                    $numero_pavimentos = $request['numero_pavimentos'];
-                    $ids_seguranca_medidas = $request['ids_seguranca_medidas'];
-
-                    for($i=1; $i<=$numero_pavimentos; $i++) {
-                        foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
-                            if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
-                                $data = array();
-                                $data['pavimento'] = $i;
-                                $data['visita_tecnica_id'] = $visita_tecnica_id;
-                                $data['seguranca_medida_id'] = $seguranca_medida_id;
-                                $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
-
-                                VisitaTecnicaSegurancaMedida::create($data);
-                            }
+                            VisitaTecnicaSegurancaMedida::create($data);
                         }
                     }
-                    //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 }
-
-
-
-
+                //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }

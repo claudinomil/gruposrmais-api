@@ -289,12 +289,11 @@ class UserController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-                //Tabela transacoes
+                //Tabela Transações
                 $qtd = DB::table('transacoes')->where('user_id', $id)->count();
 
                 if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em outras tabelas.', 2040, null, null), 200);
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Transações.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

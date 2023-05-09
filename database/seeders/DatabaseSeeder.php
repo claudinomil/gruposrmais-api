@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             EdificacaoClassificacoesSeeder::class,
             IncendioRiscosSeeder::class,
             VisitaTecnicaStatusSeeder::class,
+            BancosSeeder::class,
         ]);
     }
 }

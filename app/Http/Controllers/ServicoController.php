@@ -131,6 +131,12 @@ class ServicoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Propostas
+                $qtd = DB::table('propostas_servicos')->where('servico_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Propostas.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

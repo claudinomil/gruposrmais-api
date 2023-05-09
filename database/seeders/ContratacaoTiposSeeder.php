@@ -14,5 +14,6 @@ class ContratacaoTiposSeeder extends Seeder
         ContratacaoTipo::create(['name' => 'CLT']);
         ContratacaoTipo::create(['name' => 'MEI']);
         ContratacaoTipo::create(['name' => 'Obra Certa']);
+        ContratacaoTipo::create(['name' => 'Não Informado']);
     }
 }

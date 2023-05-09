@@ -50,6 +50,7 @@ class Funcionario extends Model
         'bairro',
         'localidade',
         'uf',
+        'departamento_id',
         'funcao_id',
         'data_admissao',
         'data_demissao',

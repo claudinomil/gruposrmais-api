@@ -222,7 +222,7 @@ class ClienteController extends Controller
                 //buscar dados das medidas de segurança
                 $cliente_seguranca_medidas = DB::table('clientes_seguranca_medidas')
                     ->leftJoin('seguranca_medidas', 'clientes_seguranca_medidas.seguranca_medida_id', '=', 'seguranca_medidas.id')
-                    ->select(['clientes_seguranca_medidas.*', 'seguranca_medidas.name as segurancaMedidaName'])
+                    ->select(['clientes_seguranca_medidas.*', 'seguranca_medidas.name as seguranca_medida_nome'])
                     ->where('clientes_seguranca_medidas.cliente_id', '=', $id)
                     ->orderBy('clientes_seguranca_medidas.pavimento')
                     ->orderBy('seguranca_medidas.name')
@@ -306,6 +306,33 @@ class ClienteController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Propostas
+                $qtd = DB::table('propostas')->where('cliente_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Propostas.', 2040, null, null), 200);
+                }
+
+                //Tabela Clientes
+                $qtd = DB::table('clientes')->where('principal_cliente_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
+
+                //Tabela Visitas Técnicas
+                $qtd = DB::table('visitas_tecnicas')->where('cliente_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Visitas Técnicas.', 2040, null, null), 200);
+                }
+
+                //Tabela clientes_seguranca_medidas
+                $qtd = DB::table('clientes_seguranca_medidas')->where('cliente_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

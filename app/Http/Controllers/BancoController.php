@@ -89,6 +89,26 @@ class BancoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela funcionarios
+                $qtd = DB::table('funcionarios')->where('banco_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
+                }
+
+                //Tabela Fornecedores
+                $qtd = DB::table('fornecedores')->where('banco_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Fornecedores.', 2040, null, null), 200);
+                }
+
+                //Tabela Clientes
+                $qtd = DB::table('clientes')->where('banco_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

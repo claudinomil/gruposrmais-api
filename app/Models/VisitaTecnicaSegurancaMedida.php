@@ -16,6 +16,8 @@ class VisitaTecnicaSegurancaMedida extends Model
         'pavimento',
         'visita_tecnica_id',
         'seguranca_medida_id',
-        'seguranca_medida_nome'
+        'seguranca_medida_nome',
+        'seguranca_medida_quantidade',
+        'seguranca_medida_observacoes'
     ];
 }

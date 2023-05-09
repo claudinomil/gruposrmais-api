@@ -280,12 +280,11 @@ class GrupoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
                 //Tabela Users
                 $qtd = DB::table('users')->where('grupo_id', $id)->count();
 
                 if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em outras tabelas.', 2040, null, null), 200);
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Usuários.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

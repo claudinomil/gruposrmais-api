@@ -6,6 +6,7 @@ use App\API\ApiReturn;
 use App\Http\Requests\DepartamentoStoreRequest;
 use App\Http\Requests\DepartamentoUpdateRequest;
 use App\Models\Departamento;
+use Illuminate\Support\Facades\DB;
 
 class DepartamentoController extends Controller
 {
@@ -89,6 +90,12 @@ class DepartamentoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Funcionários
+                $qtd = DB::table('funcionarios')->where('departamento_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

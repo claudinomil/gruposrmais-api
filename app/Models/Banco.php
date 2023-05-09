@@ -12,11 +12,9 @@ class Banco extends Model
     protected $table = 'bancos';
 
     protected $fillable = [
-        'name'
+        'name',
+        'numero'
     ];
 
-    public function setAttribute($attribute, $value)
-    {
-        $this->attributes[$attribute] = mb_strtoupper($value);
-    }
+    public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
 }

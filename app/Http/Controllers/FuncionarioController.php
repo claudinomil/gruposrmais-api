@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\API\ApiReturn;
 use App\Http\Requests\FuncionarioStoreRequest;
 use App\Http\Requests\FuncionarioUpdateRequest;
+use App\Models\Departamento;
 use App\Models\Genero;
 use App\Models\ContratacaoTipo;
 use App\Models\IdentidadeOrgao;
@@ -36,9 +37,12 @@ class FuncionarioController extends Controller
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
             ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
+            ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
+            ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
             ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -94,6 +98,9 @@ class FuncionarioController extends Controller
 
             //Estados para a Identidade
             $registros['identidade_estados'] = Estado::all();
+
+            //Departamentos
+            $registros['departamentos'] = Departamento::all();
 
             //Funções
             $registros['funcoes'] = Funcao::all();
@@ -157,11 +164,12 @@ class FuncionarioController extends Controller
                 ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
                 ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
                 ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
+                ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
                 ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
                 ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
                 ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
                 ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
-                ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'escolaridades.name as escolaridadeName', 'funcoes.name as funcaoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
+                ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
                 ->where('funcionarios.id', '=', $id)
                 ->get();
 
@@ -213,6 +221,26 @@ class FuncionarioController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Usuários
+                $qtd = DB::table('users')->where('funcionario_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Usuários.', 2040, null, null), 200);
+                }
+
+                //Tabela Clientes
+                $qtd = DB::table('clientes')->where('responsavel_funcionario_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
+
+                //Tabela Visitas Técnicas
+                $qtd = DB::table('visitas_tecnicas')->where('responsavel_funcionario_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Visitas Técnicas.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -237,9 +265,12 @@ class FuncionarioController extends Controller
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
             ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
+            ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
+            ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
             ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
@@ -253,9 +284,12 @@ class FuncionarioController extends Controller
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
             ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
+            ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
+            ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
+            ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
             ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
             ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName'])
+            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
             ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
             ->get($fieldReturn);
 

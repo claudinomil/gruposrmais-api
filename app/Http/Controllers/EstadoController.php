@@ -6,6 +6,7 @@ use App\API\ApiReturn;
 use App\Http\Requests\EstadoStoreRequest;
 use App\Http\Requests\EstadoUpdateRequest;
 use App\Models\Estado;
+use Illuminate\Support\Facades\DB;
 
 class EstadoController extends Controller
 {
@@ -89,6 +90,33 @@ class EstadoController extends Controller
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela Fornecedores
+                $qtd = DB::table('fornecedores')->where('identidade_estado_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Fornecedores.', 2040, null, null), 200);
+                }
+
+                //Tabela Clientes
+                $qtd = DB::table('clientes')->where('identidade_estado_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
+
+                //Tabela Funcionários
+                $qtd = DB::table('funcionarios')->where('personal_identidade_estado_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
+                }
+
+                //Tabela Funcionários
+                $qtd = DB::table('funcionarios')->where('professional_identidade_estado_id', $id)->count();
+
+                if ($qtd > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
+                }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
