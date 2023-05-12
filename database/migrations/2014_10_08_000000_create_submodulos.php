@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('menu_icon');
             $table->string('prefix_permissao')->unique();
             $table->string('prefix_route')->unique();
-            $table->integer('mobile')->default(0);
+            $table->integer('mobile')->default(0); //Se tiver como 1 o submódulo vai aparecer tambem na versão Mobile
+            $table->string('menu_text_mobile')->nullable();
             $table->integer('viewing_order');
             $table->timestamps();
             $table->softDeletes();

@@ -347,16 +347,10 @@ class UserController extends Controller
                     ->get();
 
                 //Menu Módulos
-                $registros['menuModulos'] = Modulo::where('mobile', '=', '0')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+                $registros['menuModulos'] = Modulo::where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
 
                 //Menu Submódulos
-                $registros['menuSubmodulos'] = Submodulo::where('mobile', '=', '0')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
-
-                //Menu Módulos Mobile
-                $registros['menuModulosMobile'] = Modulo::where('mobile', '=', '1')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
-
-                //Menu Submódulos Mobile
-                $registros['menuSubmodulosMobile'] = Submodulo::where('mobile', '=', '1')->where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+                $registros['menuSubmodulos'] = Submodulo::where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
 
                 //Ferramentas
                 $registros['ferramentas'] = DB::table('ferramentas')
@@ -399,10 +393,6 @@ class UserController extends Controller
                 $registros['ajaxNameSubmodulo'] = Submodulo::select('name')->where('menu_route', '=', $searchSubmodulo)->get();
 
                 //Submódulo nome dos campos
-
-                //verificar se veio de um submódulo MOBILE e, se precisa trocar nome para buscar campos da tabela
-                if (substr($searchSubmodulo, 0 , 7) == 'mobile_') {$searchSubmodulo = substr($searchSubmodulo, 7);}
-
                 $registros['ajaxNamesFieldsSubmodulo'] = Schema::getColumnListing($searchSubmodulo);
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

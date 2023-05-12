@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\API\ApiReturn;
 use App\Models\Cliente;
 use App\Models\Funcionario;
+use App\Models\Proposta;
 use App\Models\User;
+use App\Models\VisitaTecnica;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -46,6 +49,49 @@ class DashboardController extends Controller
 
             //Distribuição por Tipos
             $content['dashboardsClientesTipos'] = DB::select("SELECT tipo, count(clientes.id) as qtd FROM clientes GROUP BY tipo ORDER BY tipo");
+        }
+
+        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $content), 200);
+    }
+
+    public function index_mobile($id)
+    {
+        $content = array();
+
+        //Pegando valor do funcionario_id do usuáriologado
+        if (Auth::user()->funcionario_id === null) {
+            $funcionario_id = 0;
+        } else {
+            $funcionario_id = Auth::user()->funcionario_id;
+        }
+
+        //Clientes
+        if (substr($id, 0, 1) == 1) {
+            //Qtd
+            $content['dashboardsClientesQtd'] = Cliente::where('responsavel_funcionario_id', '=', $funcionario_id)->count();
+
+            //Propostas
+            $content['dashboardsClientesPropostas'] = count(DB::select("SELECT id FROM propostas WHERE cliente_id IN(SELECT id FROM clientes WHERE responsavel_funcionario_id=" . $funcionario_id . ")"));
+
+            //Visitas Tecnicas
+            $content['dashboardsClientesVisitasTecnicas'] = count(DB::select("SELECT id FROM visitas_tecnicas WHERE cliente_id IN(SELECT id FROM clientes WHERE responsavel_funcionario_id=" . $funcionario_id . ")"));
+        }
+
+        //Propostas
+        if (substr($id, 2, 1) == 1) {
+            //Qtd
+            $content['dashboardsPropostasQtd'] = count(DB::select("SELECT id FROM propostas WHERE cliente_id IN(SELECT id FROM clientes WHERE responsavel_funcionario_id=" . $funcionario_id . ")"));
+        }
+
+        //Visitas Tecnicas
+        if (substr($id, 4, 1) == 1) {
+            $content['dashboardsVisitasTecnicasQtd'] = VisitaTecnica::where('responsavel_funcionario_id', '=', $funcionario_id)->count();
+
+            //Aguardando Visita
+            $content['dashboardsVisitasTecnicasAguardando'] = VisitaTecnica::where('responsavel_funcionario_id', '=', $funcionario_id)->where('visita_tecnica_status_id', '=', 1)->count();
+
+            //Visita Executada
+            $content['dashboardsVisitasTecnicasExecutadas'] = VisitaTecnica::where('responsavel_funcionario_id', '=', $funcionario_id)->where('visita_tecnica_status_id', '=', 2)->count();
         }
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $content), 200);
