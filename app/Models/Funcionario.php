@@ -70,7 +70,9 @@ class Funcionario extends Model
     ];
 
     public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
-    public function setEmailAttribute($value) {$this->attributes['email'] = mb_strtolower($value);}
+    public function setEmailAttribute($value) {
+        if ($value != '' and $value !== null) {$this->attributes['email'] = mb_strtolower($value);}
+    }
     public function setPaiAttribute($value) {$this->attributes['pai'] = mb_strtoupper($value);}
     public function setMaeAttribute($value) {$this->attributes['mae'] = mb_strtoupper($value);}
     public function setComplementoAttribute($value) {$this->attributes['complemento'] = mb_strtoupper($value);}
