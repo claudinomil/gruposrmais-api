@@ -123,9 +123,9 @@ class FuncionarioController extends Controller
 
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
-            if (config('app.debug')) {
+//            if (config('app.debug')) {
                 return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
+//            }
 
             return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
         }
