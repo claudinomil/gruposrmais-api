@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\BancoStoreRequest;
 use App\Http\Requests\BancoUpdateRequest;
 use App\Models\GrupoPermissao;
@@ -23,13 +24,13 @@ class GrupoController extends Controller
         $this->grupo = $grupo;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         //Registros
         $registros = array();
 
         //Varrendo Grupos para pegar Permissoes
-        $grupos = $this->grupo->get();
+        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->get();
         foreach ($grupos as $key => $grupo) {
             $grupo_id = $grupo->id;
             $grupo_name = $grupo->name;
@@ -123,7 +124,7 @@ class GrupoController extends Controller
         }
     }
 
-    public function auxiliary()
+    public function auxiliary($empresa_id)
     {
         try {
             $registros = array();
@@ -141,9 +142,15 @@ class GrupoController extends Controller
         }
     }
 
-    public function store(BancoStoreRequest $request)
+    public function store(BancoStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro na tabela grupos
             $grupo = $this->grupo->create($request->all());
             $grupo_id = $grupo['id'];
@@ -201,7 +208,7 @@ class GrupoController extends Controller
         }
     }
 
-    public function update(BancoUpdateRequest $request, $id)
+    public function update(BancoUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->grupo->find($id);
@@ -209,6 +216,9 @@ class GrupoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, '', $registro), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro na tabela grupos
                 $registro->update($request->all());
 
@@ -271,7 +281,7 @@ class GrupoController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->grupo->find($id);
@@ -279,12 +289,13 @@ class GrupoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Users
-                $qtd = DB::table('users')->where('grupo_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Usuários.', 2040, null, null), 200);
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela users_configuracoes
+                if (SuporteFacade::verificarRelacionamento('users_configuracoes', 'grupo_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Usuários Configurações.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -306,13 +317,13 @@ class GrupoController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
         //Registros
         $registros = array();
 
         //Varrendo Grupos para pegar Permissoes
-        $grupos = $this->grupo->where($field, 'like', '%'.$value.'%')->get();
+        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->where($field, 'like', '%'.$value.'%')->get();
         foreach ($grupos as $key => $grupo) {
             $grupo_id = $grupo->id;
             $grupo_name = $grupo->name;
@@ -370,13 +381,13 @@ class GrupoController extends Controller
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
         //Registros
         $registros = array();
 
         //Varrendo Grupos para pegar Permissoes
-        $grupos = $this->grupo->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
+        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
         foreach ($grupos as $key => $grupo) {
             $grupo_id = $grupo->id;
             $grupo_name = $grupo->name;

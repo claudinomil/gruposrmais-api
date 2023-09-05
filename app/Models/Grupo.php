@@ -12,6 +12,7 @@ class Grupo extends Model
     //protected $table = 'grupos';
 
     protected $fillable = [
+        'empresa_id',
         'name'
     ];
 

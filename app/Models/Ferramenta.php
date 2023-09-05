@@ -12,6 +12,7 @@ class Ferramenta extends Model
     protected $table = 'ferramentas';
 
     protected $fillable = [
+        'empresa_id',
         'name',
         'descricao',
         'url',

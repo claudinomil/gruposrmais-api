@@ -10,7 +10,7 @@ class PropostaObserver
     public function created(Proposta $proposta)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'propostas', $proposta, $proposta);
+        Transacoes::transacaoRecord(1, 1, 'propostas', $proposta, $proposta);
     }
 
     public function updated(Proposta $proposta)
@@ -19,12 +19,12 @@ class PropostaObserver
         $beforeData = $proposta->getOriginal();
         $laterData = $proposta->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'propostas', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'propostas', $beforeData, $laterData);
     }
 
     public function deleted(Proposta $proposta)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(3, 'propostas', $proposta, $proposta);
+        Transacoes::transacaoRecord(1, 3, 'propostas', $proposta, $proposta);
     }
 }

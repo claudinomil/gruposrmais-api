@@ -3,7 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Banco;
+use App\Models\Brigada;
+use App\Models\ClienteServico;
 use App\Models\Departamento;
+use App\Models\Empresa;
 use App\Models\Fornecedor;
 use App\Models\Funcionario;
 use App\Models\Cliente;
@@ -11,7 +14,6 @@ use App\Models\Genero;
 use App\Models\Grupo;
 use App\Models\IdentidadeOrgao;
 use App\Models\EstadoCivil;
-use App\Models\Modulo;
 use App\Models\Nacionalidade;
 use App\Models\Naturalidade;
 use App\Models\Notificacao;
@@ -22,12 +24,14 @@ use App\Models\Proposta;
 use App\Models\Servico;
 use App\Models\ServicoTipo;
 use App\Models\Situacao;
-use App\Models\Submodulo;
 use App\Models\Ferramenta;
 use App\Models\User;
 use App\Models\VisitaTecnica;
 use App\Observers\BancoObserver;
+use App\Observers\BrigadaObserver;
+use App\Observers\ClienteServicoObserver;
 use App\Observers\DepartamentoObserver;
+use App\Observers\EmpresaObserver;
 use App\Observers\FornecedorObserver;
 use App\Observers\FuncionarioObserver;
 use App\Observers\ClienteObserver;
@@ -35,7 +39,6 @@ use App\Observers\GeneroObserver;
 use App\Observers\GrupoObserver;
 use App\Observers\IdentidadeOrgaoObserver;
 use App\Observers\EstadoCivilObserver;
-use App\Observers\ModuloObserver;
 use App\Observers\NacionalidadeObserver;
 use App\Observers\NaturalidadeObserver;
 use App\Observers\NotificacaoObserver;
@@ -44,9 +47,7 @@ use App\Observers\FuncaoObserver;
 use App\Observers\EscolaridadeObserver;
 use App\Observers\PropostaObserver;
 use App\Observers\ServicoObserver;
-use App\Observers\ServicoTipoObserver;
 use App\Observers\SituacaoObserver;
-use App\Observers\SubmoduloObserver;
 use App\Observers\FerramentaObserver;
 use App\Observers\UserObserver;
 
@@ -66,8 +67,11 @@ class EventServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Banco::observe(BancoObserver::class);
+        Brigada::observe(BrigadaObserver::class);
         Cliente::observe(ClienteObserver::class);
+        ClienteServico::observe(ClienteServicoObserver::class);
         Departamento::observe(DepartamentoObserver::class);
+        Empresa::observe(EmpresaObserver::class);
         Escolaridade::observe(EscolaridadeObserver::class);
         EstadoCivil::observe(EstadoCivilObserver::class);
         Ferramenta::observe(FerramentaObserver::class);
@@ -77,17 +81,14 @@ class EventServiceProvider extends ServiceProvider
         Genero::observe(GeneroObserver::class);
         Grupo::observe(GrupoObserver::class);
         IdentidadeOrgao::observe(IdentidadeOrgaoObserver::class);
-        Modulo::observe(ModuloObserver::class);
         Nacionalidade::observe(NacionalidadeObserver::class);
         Naturalidade::observe(NaturalidadeObserver::class);
         Notificacao::observe(NotificacaoObserver::class);
         Operacao::observe(OperacaoObserver::class);
-        Servico::observe(ServicoObserver::class);
-        ServicoTipo::observe(ServicoTipoObserver::class);
-        Situacao::observe(SituacaoObserver::class);
-        Submodulo::observe(SubmoduloObserver::class);
-        User::observe(UserObserver::class);
         Proposta::observe(PropostaObserver::class);
+        Servico::observe(ServicoObserver::class);
+        Situacao::observe(SituacaoObserver::class);
+        User::observe(UserObserver::class);
         VisitaTecnica::observe(VisitaTecnicaObserver::class);
     }
 

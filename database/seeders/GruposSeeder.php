@@ -9,6 +9,6 @@ class GruposSeeder extends Seeder
 {
     public function run()
     {
-        Grupo::create(['name' => 'Administrador']);
+        Grupo::create(['empresa_id' => 1, 'name' => 'ADMINISTRADOR']);
     }
 }

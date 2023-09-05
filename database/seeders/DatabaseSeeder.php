@@ -9,6 +9,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
+            EmpresasSeeder::class,
             ModulosSeeder::class,
             SubmodulosSeeder::class,
             GenerosSeeder::class,
@@ -22,7 +23,6 @@ class DatabaseSeeder extends Seeder
             EscolaridadesSeeder::class,
             TelefoneDddsSeeder::class,
             TelefoneDdisSeeder::class,
-            FuncionariosSeeder::class,
             GruposSeeder::class,
             IconsSeeder::class,
             PermissoesSeeder::class,
@@ -35,8 +35,17 @@ class DatabaseSeeder extends Seeder
             SegurancaMedidasSeeder::class,
             EdificacaoClassificacoesSeeder::class,
             IncendioRiscosSeeder::class,
-            VisitaTecnicaStatusSeeder::class,
             BancosSeeder::class,
+            DepartamentosSeeder::class,
+            FuncoesSeeder::class,
+            EscalaTiposSeeder::class,
+            ServicoStatusSeeder::class,
+            EscalaFrequenciasSeeder::class,
+            LayoutsModesSeeder::class,
+            LayoutsStylesSeeder::class,
+            FuncionariosSeeder::class,
+
+            Z_RealSeeder::class
         ]);
     }
 }

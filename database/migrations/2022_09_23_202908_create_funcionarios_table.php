@@ -6,15 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateFuncionariosTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('funcionarios', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->string('name');
             $table->date('data_nascimento');
             $table->foreignId('contratacao_tipo_id')->constrained('contratacao_tipos');

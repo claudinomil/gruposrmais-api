@@ -10,7 +10,7 @@ class UserObserver
     public function created(User $user)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'users', $user, $user);
+        Transacoes::transacaoRecord(1, 1, 'users', $user, $user);
     }
 
     public function updated(User $user)
@@ -19,13 +19,13 @@ class UserObserver
         $beforeData = $user->getOriginal();
         $laterData = $user->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'users', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'users', $beforeData, $laterData);
     }
 
     public function deleted(User $user)
     {
         //gravar transacao
         Transacoes::
-        transacaoRecord(3, 'users', $user, $user);
+        transacaoRecord(1, 3, 'users', $user, $user);
     }
 }

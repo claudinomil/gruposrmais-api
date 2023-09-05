@@ -15,6 +15,7 @@ class CreateFornecedoresTable extends Migration
     {
         Schema::create('fornecedores', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->string('status', 1)->default(0);
             $table->string('tipo', 1)->default(0);
             $table->string('name');
@@ -52,7 +53,6 @@ class CreateFornecedoresTable extends Migration
             $table->string('telefone_2')->nullable();
             $table->string('celular_1')->nullable();
             $table->string('celular_2')->nullable();
-            $table->text('foto')->nullable();
             $table->timestamps();
         });
     }

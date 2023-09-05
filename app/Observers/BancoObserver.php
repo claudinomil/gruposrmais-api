@@ -10,7 +10,7 @@ class BancoObserver
     public function created(Banco $banco)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'bancos', $banco, $banco);
+        Transacoes::transacaoRecord(1, 1, 'bancos', $banco, $banco);
     }
 
     public function updated(Banco $banco)
@@ -19,12 +19,12 @@ class BancoObserver
         $beforeData = $banco->getOriginal();
         $laterData = $banco->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'bancos', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'bancos', $beforeData, $laterData);
     }
 
     public function deleted(Banco $banco)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(3, 'bancos', $banco, $banco);
+        Transacoes::transacaoRecord(1, 3, 'bancos', $banco, $banco);
     }
 }

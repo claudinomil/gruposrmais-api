@@ -26,7 +26,6 @@ class ClienteUpdateRequest extends FormRequest
     {
         return [
             'principal_cliente_id' => ['nullable', 'integer', 'numeric'],
-            'responsavel_funcionario_id' => ['nullable', 'integer', 'numeric'],
             'status' => ['required'],
             'tipo' => ['required'],
             'name' => ['required', 'min:3'],
@@ -64,7 +63,7 @@ class ClienteUpdateRequest extends FormRequest
             'banco_id' => ['nullable', 'integer', 'numeric'],
             'agencia' => ['nullable', 'numeric', 'min:2'],
             'conta' => ['nullable', 'numeric', 'min:3'],
-            'email' => ['email'],
+            'email' => ['nullable', 'email'],
             'site' => [
                 'nullable',
                 Rule::unique('clientes')->ignore($this->id),
@@ -81,7 +80,6 @@ class ClienteUpdateRequest extends FormRequest
     {
         return [
             'principal_cliente_id.integer' => 'O Cliente Principal deve ser um ítem da lista.',
-            'responsavel_funcionario_id.integer' => 'O Responsável deve ser um ítem da lista.',
             'status.required' => 'O Status é requerido.',
             'tipo.required' => 'O Tipo é requerido.',
             'name.required' => 'O Nome é requerido.',

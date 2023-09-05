@@ -15,9 +15,10 @@ class CreateServicosTable extends Migration
     {
         Schema::create('servicos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->string('name');
             $table->foreignId('servico_tipo_id')->nullable()->constrained('servico_tipos');
-            $table->decimal('valor');
+            $table->decimal('valor', 9, 2);
             $table->timestamps();
         });
     }

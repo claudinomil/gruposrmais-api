@@ -12,10 +12,21 @@ class Servico extends Model
     protected $table = 'servicos';
 
     protected $fillable = [
+        'empresa_id',
         'name',
         'servico_tipo_id',
         'valor'
     ];
 
     public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
+
+    public function getValorAttribute($value) {return number_format($value, 2, ',', '.');}
+    public function setValorAttribute($value)
+    {
+        if (strstr($value,'.')) {$value = str_replace('.','',$value);}
+        if (strstr($value,',')) {$value = str_replace(',','.',$value);}
+        if ($value == '') {$value = 0.00;}
+
+        $this->attributes['valor'] = $value;
+    }
 }

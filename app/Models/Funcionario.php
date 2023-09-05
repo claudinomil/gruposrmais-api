@@ -13,6 +13,7 @@ class Funcionario extends Model
     protected $table = 'funcionarios';
 
     protected $fillable = [
+        'empresa_id',
         'name',
         'data_nascimento',
         'contratacao_tipo_id',
@@ -70,8 +71,16 @@ class Funcionario extends Model
     ];
 
     public function setNameAttribute($value) {$this->attributes['name'] = mb_strtoupper($value);}
-    public function setEmailAttribute($value) {
-        if ($value != '' and $value !== null) {$this->attributes['email'] = mb_strtolower($value);}
+
+    public function setEmailAttribute($value)
+    {
+        if ($value == '') {
+            $this->attributes['email'] = null;
+        } else {
+            if ($value !== null) {
+                $this->attributes['email'] = mb_strtolower($value);
+            }
+        }
     }
     public function setPaiAttribute($value) {$this->attributes['pai'] = mb_strtoupper($value);}
     public function setMaeAttribute($value) {$this->attributes['mae'] = mb_strtoupper($value);}

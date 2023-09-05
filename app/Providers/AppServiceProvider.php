@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\SuporteService;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Passport\Passport;
 use App\Services\Transacoes;
@@ -18,6 +19,11 @@ class AppServiceProvider extends ServiceProvider
         //Facade Service Transacoes
         $this->app->bind('transacoes-sistema', function () {
             return new Transacoes();
+        });
+
+        //Facade SuporteFacade
+        $this->app->bind('facade-servico', function () {
+            return new SuporteService();
         });
     }
 

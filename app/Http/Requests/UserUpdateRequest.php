@@ -30,12 +30,7 @@ class UserUpdateRequest extends FormRequest
                 'nullable',
                 Rule::unique('users')->ignore($this->id),
                 'email'
-            ],
-            'layout_mode' => ['required'],
-            'layout_style' => ['required'],
-            'grupo_id' => ['required'],
-            'situacao_id' => ['required'],
-            'sistema_acesso_id' => ['required']
+            ]
         ];
     }
 
@@ -44,12 +39,7 @@ class UserUpdateRequest extends FormRequest
         return [
             'name.required' => 'O Nome é requerido.',
             'email.unique' => 'O E-mail já existe.',
-            'email.email' => 'O E-mail deve ser um endereço válido.',
-            'layout_mode.required' => 'O Mode é requerido.',
-            'layout_style.required' => 'O Estilo é requerido.',
-            'grupo_id.required' => 'O Grupo é requerido.',
-            'situacao_id.required' => 'A Situação é requerido.',
-            'sistema_acesso_id.required' => 'O Sistema Acesso  é requerido.'
+            'email.email' => 'O E-mail deve ser um endereço válido.'
         ];
     }
 }

@@ -3,18 +3,32 @@
 namespace App\Services;
 
 use App\Models\Banco;
+use App\Models\Brigada;
+use App\Models\BrigadaEscala;
+use App\Models\BrigadaRonda;
 use App\Models\Cliente;
+use App\Models\ClienteServico;
 use App\Models\ContratacaoTipo;
+use App\Models\Departamento;
+use App\Models\EdificacaoClassificacao;
+use App\Models\Empresa;
+use App\Models\EscalaFrequencia;
+use App\Models\EscalaTipo;
 use App\Models\Funcionario;
 use App\Models\Genero;
 use App\Models\Grupo;
 use App\Models\IdentidadeOrgao;
 use App\Models\EstadoCivil;
-use App\Models\Modulo;
+use App\Models\IncendioRisco;
 use App\Models\Nacionalidade;
 use App\Models\Naturalidade;
 use App\Models\Funcao;
 use App\Models\Escolaridade;
+use App\Models\Proposta;
+use App\Models\PropostaServico;
+use App\Models\SegurancaMedida;
+use App\Models\Servico;
+use App\Models\ServicoStatus;
 use App\Models\ServicoTipo;
 use App\Models\SistemaAcesso;
 use App\Models\Situacao;
@@ -22,14 +36,176 @@ use App\Models\Estado;
 use App\Models\Transacao;
 use App\Models\User;
 
-use App\Models\VisitaTecnicaStatus;
+use App\Models\VisitaTecnica;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class Transacoes
 {
-    //Função para Gravar Transação
-    public function transacaoRecord($operacao, $submodulo, $beforeData, $laterData) {
+    public $abreSpan = "";
+    public $fechaSpan = "";
+    public $gravarAlteracao = false;
+
+    public function retornaDado($op, $dadoAnterior, $dadoAtual, $etiqueta, $model, $modelCampoRetorno) {
+        $retorno = '';
+
+        if ($dadoAnterior != $dadoAtual) {
+            $this->abreSpan = "<font class='text-danger'>";
+            $this->fechaSpan = "</font>";
+
+            $this->gravarAlteracao = true;
+        } else {
+            $this->abreSpan = "";
+            $this->fechaSpan = "";
+        }
+
+        //Opção para campos sem id's simples, com apenas um retorno
+        if ($op == 1) {
+            $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $dadoAtual . "<br>";
+        }
+
+        //Opção para campos id's simples, com apenas um retorno
+        if ($op == 2) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $search = $model::where('id', $dadoAtual)->get([$modelCampoRetorno]);
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search[0][$modelCampoRetorno] . "<br>";
+            }
+        }
+
+        //Opção para o campo cliente_servico_id
+        if ($op == 3) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $cliente_servico = ClienteServico::where('id', $dadoAtual)->get()[0];
+
+                $search_cliente_id = $cliente_servico['cliente_id'];
+                $cliente = Cliente::where('id', $search_cliente_id)->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $search_servico_id = $cliente_servico['servico_id'];
+                $servico = Servico::where('id', $search_servico_id)->get(['name'])[0];
+                $search_servico = $servico['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_servico . "<br>";
+            }
+        }
+
+        //Opção para o campo proposta_id
+        if ($op == 4) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $proposta = Proposta::where('id', $dadoAtual)->get()[0];
+                $search_data_proposta = $proposta['data_proposta'];
+                $search_numero_proposta = $proposta['numero_proposta'];
+
+                $cliente = Cliente::where('id', $proposta['cliente_id'])->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_data_proposta . "/" . $search_numero_proposta . "<br>";
+            }
+        }
+
+        //Opção para o campo brigada_id
+        if ($op == 5) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $brigada = Brigada::where('id', $dadoAtual)->get()[0];
+                $search_cliente_servico_id = $brigada['cliente_servico_id'];
+
+                $cliente_servico = ClienteServico::where('id', $search_cliente_servico_id)->get()[0];
+
+                $search_cliente_id = $cliente_servico['cliente_id'];
+                $cliente = Cliente::where('id', $search_cliente_id)->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $search_servico_id = $cliente_servico['servico_id'];
+                $servico = Servico::where('id', $search_servico_id)->get(['name'])[0];
+                $search_servico = $servico['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_servico . "<br>";
+            }
+        }
+
+        //Opção para o campo brigada_escala_id
+        if ($op == 6) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $brigada_escala = BrigadaEscala::where('id', $dadoAtual)->get()[0];
+                $search_brigada_id = $brigada_escala['brigada_id'];
+
+                $search_dados_escala = '##Escala: '.$brigada_escala['escala_tipo_nome'].' ##Chegada: '.$brigada_escala['data_chegada'].' '.$brigada_escala['hora_chegada'].' ##Brigadista: '.$brigada_escala['funcionario_nome'].' ##Ala '.$brigada_escala['ala'];
+
+                $brigada = Brigada::where('id', $search_brigada_id)->get()[0];
+                $search_cliente_servico_id = $brigada['cliente_servico_id'];
+
+                $cliente_servico = ClienteServico::where('id', $search_cliente_servico_id)->get()[0];
+
+                $search_cliente_id = $cliente_servico['cliente_id'];
+                $cliente = Cliente::where('id', $search_cliente_id)->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $search_servico_id = $cliente_servico['servico_id'];
+                $servico = Servico::where('id', $search_servico_id)->get(['name'])[0];
+                $search_servico = $servico['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_servico . "/" . $search_dados_escala . "<br>";
+            }
+        }
+
+        //Opção para o campo brigada_ronda_id
+        if ($op == 7) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $brigada_ronda = BrigadaRonda::where('id', $dadoAtual)->get()[0];
+                $search_escala_id = $brigada_ronda['brigada_escala_id'];
+
+                $brigada_escala = BrigadaEscala::where('id', $search_escala_id)->get()[0];
+                $search_brigada_id = $brigada_escala['brigada_id'];
+
+                $search_dados_escala = '##Escala: '.$brigada_escala['escala_tipo_nome'].' ##Chegada: '.$brigada_escala['data_chegada'].' '.$brigada_escala['hora_chegada'].' ##Brigadista: '.$brigada_escala['funcionario_nome'].' ##Ala '.$brigada_escala['ala'];
+
+                $brigada = Brigada::where('id', $search_brigada_id)->get()[0];
+                $search_cliente_servico_id = $brigada['cliente_servico_id'];
+
+                $cliente_servico = ClienteServico::where('id', $search_cliente_servico_id)->get()[0];
+
+                $search_cliente_id = $cliente_servico['cliente_id'];
+                $cliente = Cliente::where('id', $search_cliente_id)->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $search_servico_id = $cliente_servico['servico_id'];
+                $servico = Servico::where('id', $search_servico_id)->get(['name'])[0];
+                $search_servico = $servico['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_servico . "/" . $search_dados_escala . "<br>";
+            }
+        }
+
+        //Opção para o campo visita_tecnica_id
+        if ($op == 8) {
+            if (($dadoAtual != "") and ($dadoAtual != 0)) {
+                $visita_tecnica = VisitaTecnica::where('id', $dadoAtual)->get()[0];
+                $search_cliente_servico_id = $visita_tecnica['cliente_servico_id'];
+
+                $cliente_servico = ClienteServico::where('id', $search_cliente_servico_id)->get()[0];
+
+                $search_cliente_id = $cliente_servico['cliente_id'];
+                $cliente = Cliente::where('id', $search_cliente_id)->get(['name'])[0];
+                $search_cliente = $cliente['name'];
+
+                $search_servico_id = $cliente_servico['servico_id'];
+                $servico = Servico::where('id', $search_servico_id)->get(['name'])[0];
+                $search_servico = $servico['name'];
+
+                $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $search_cliente . "/" . $search_servico . "<br>";
+            }
+        }
+
+        return $retorno;
+    }
+
+    /*
+     * Função para Gravar Transação
+     *
+     * @PARAM op=1 : Transação na tabela principal do Submódulo
+     * @PARAM op=? : Transação em tabelas pivot ou outras tabelas referentes ao Submódulo
+     */
+    public function transacaoRecord($op=1, $operacao, $submodulo, $dadosAnterior, $dadosAtual) {
         //Gravar transação
         if (Auth::check()) {
             //submodulo_id'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -41,1903 +217,536 @@ class Transacoes
             //montar campo dados'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             $dados = '';
 
-            //modulos
-            if ($submodulo_id == 1) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['menu_text'] != $laterData['menu_text']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Texto: " . $y . $laterData['menu_text'] . "<br>";
-
-                if ($beforeData['menu_url'] != $laterData['menu_url']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu URL: " . $y . $laterData['menu_url'] . "<br>";
-
-                if ($beforeData['menu_route'] != $laterData['menu_route']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Rota: " . $y . $laterData['menu_route'] . "<br>";
-
-                if ($beforeData['menu_icon'] != $laterData['menu_icon']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Ícone: " . $y . $laterData['menu_icon'] . "<br>";
-
-                if ($beforeData['viewing_order'] != $laterData['viewing_order']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Ordem Visualização: " . $y . $laterData['viewing_order'] . "<br>";
-            }
-
-            //submodulos
-            if ($submodulo_id == 2) {
-                if ($beforeData['modulo_id'] != $laterData['modulo_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['modulo_id'] != "") and ($laterData['modulo_id'] != 0)) {
-                    $search = Modulo::where('id', $laterData['modulo_id'])->get(['name']);
-                    $dados .= $x . "Módulo: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['menu_text'] != $laterData['menu_text']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Texto: " . $y . $laterData['menu_text'] . "<br>";
-
-                if ($beforeData['menu_url'] != $laterData['menu_url']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu URL: " . $y . $laterData['menu_url'] . "<br>";
-
-                if ($beforeData['menu_route'] != $laterData['menu_route']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Rota: " . $y . $laterData['menu_route'] . "<br>";
-
-                if ($beforeData['menu_icon'] != $laterData['menu_icon']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Menu Ícone: " . $y . $laterData['menu_icon'] . "<br>";
-
-                if ($beforeData['prefix_permissao'] != $laterData['prefix_permissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Prefixo Permissão: " . $y . $laterData['prefix_permissao'] . "<br>";
-
-                if ($beforeData['prefix_route'] != $laterData['prefix_route']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Prefixo Rota: " . $y . $laterData['prefix_route'] . "<br>";
-
-                if ($beforeData['viewing_order'] != $laterData['viewing_order']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Ordem Visualização: " . $y . $laterData['viewing_order'] . "<br>";
-            }
-
             //grupos
-            if ($submodulo_id == 4) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 1) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Grupos</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //users
-            if ($submodulo_id == 5) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['email'] != $laterData['email']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "E-mail: " . $y . $laterData['email'] . "<br>";
-
-                if ($beforeData['avatar'] != $laterData['avatar']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Avatar: " . $y . $laterData['avatar'] . "<br>";
-
-                if ($beforeData['layout_style'] != $laterData['layout_style']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Layout Style: " . $y . $laterData['layout_style'] . "<br>";
-
-                if ($beforeData['layout_mode'] != $laterData['layout_mode']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Layout Mode: " . $y . $laterData['layout_mode'] . "<br>";
-
-                if ($beforeData['grupo_id'] != $laterData['grupo_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['grupo_id'] != "") and ($laterData['grupo_id'] != 0)) {
-                    $search = Grupo::where('id', $laterData['grupo_id'])->get(['name']);
-                    $dados .= $x . "Grupo: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 2) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Usuários</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['email'], $dadosAtual['email'], 'E-mail', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['funcionario_id'], $dadosAtual['funcionario_id'], 'Funcionário', Funcionario::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['avatar'], $dadosAtual['avatar'], 'Avatar', '', '');
                 }
 
-                if ($beforeData['situacao_id'] != $laterData['situacao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['situacao_id'] != "") and ($laterData['situacao_id'] != 0)) {
-                    $search = Situacao::where('id', $laterData['situacao_id'])->get(['name']);
-                    $dados .= $x . "Situação: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['funcionario_id'] != $laterData['funcionario_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['funcionario_id'] != "") and ($laterData['funcionario_id'] != 0)) {
-                    $search = Funcionario::where('id', $laterData['funcionario_id'])->get(['name']);
-                    $dados .= $x . "Funcionário: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['sistema_acesso_id'] != $laterData['sistema_acesso_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['sistema_acesso_id'] != "") and ($laterData['sistema_acesso_id'] != 0)) {
-                    $search = SistemaAcesso::where('id', $laterData['sistema_acesso_id'])->get(['name']);
-                    $dados .= $x . "Sistema Acesso: " . $y . $search[0]['name'] . "<br>";
+                //Tabela users_configuracoes
+                if ($op == 2) {
+                    $dados .= '<b>:: Usuários Configurações</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['user_id'], $dadosAtual['user_id'], 'Usuário', User::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['grupo_id'], $dadosAtual['grupo_id'], 'Grupo', Grupo::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['situacao_id'], $dadosAtual['situacao_id'], 'Situação', Situacao::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['sistema_acesso_id'], $dadosAtual['sistema_acesso_id'], 'Sistema Acesso', SistemaAcesso::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['layout_mode'], $dadosAtual['layout_mode'], 'Layout Mode', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['layout_style'], $dadosAtual['layout_style'], 'Layout Style', '', '');
                 }
             }
 
             //notificacoes
-            if ($submodulo_id == 7) {
-                if ($beforeData['date'] != $laterData['date']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data: " . $y . $laterData['date'] . "<br>";
-
-                if ($beforeData['time'] != $laterData['time']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Hora: " . $y . $laterData['time'] . "<br>";
-
-                if ($beforeData['title'] != $laterData['title']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Título: " . $y . $laterData['title'] . "<br>";
-
-                if ($beforeData['notificacao'] != $laterData['notificacao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Notificação: " . $y . $laterData['notificacao'] . "<br>";
-
-                if ($beforeData['user_id'] != $laterData['user_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['user_id'] != "") and ($laterData['user_id'] != 0)) {
-                    $search = User::where('id', $laterData['user_id'])->get(['name']);
-                    $dados .= $x . "Usuário: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 3) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Notificações</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['date'], $dadosAtual['date'], 'Data', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['time'], $dadosAtual['time'], 'Hora', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['title'], $dadosAtual['title'], 'Título', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['notificacao'], $dadosAtual['notificacao'], 'Notificação', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['user_id'], $dadosAtual['user_id'], 'Usuário', User::class, 'name');
                 }
             }
 
             //ferramentas
-            if ($submodulo_id == 9) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 5) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Ferramentas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['descricao'], $dadosAtual['descricao'], 'Descrição', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['url'], $dadosAtual['url'], 'URL', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['icon'], $dadosAtual['icon'], 'Ícone', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['user_id'], $dadosAtual['user_id'], 'Usuário', User::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['viewing_order'], $dadosAtual['viewing_order'], 'Ordem Visualização', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['descricao'] != $laterData['descricao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Descrição: " . $y . $laterData['descricao'] . "<br>";
-
-                if ($beforeData['url'] != $laterData['url']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "URL: " . $y . $laterData['url'] . "<br>";
-
-                if ($beforeData['icon'] != $laterData['icon']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Ícone: " . $y . $laterData['icon'] . "<br>";
-
-                if ($beforeData['viewing_order'] != $laterData['viewing_order']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Ordem Visualização: " . $y . $laterData['viewing_order'] . "<br>";
             }
             //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
             //bancos
-            if ($submodulo_id == 10) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 6) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Bancos</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero'], $dadosAtual['numero'], 'Número', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //departamentos
-            if ($submodulo_id == 11) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 7) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Departamentos</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //estados_civis
-            if ($submodulo_id == 12) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 8) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Estados Civis</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //nacionalidades
-            if ($submodulo_id == 13) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 9) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Nacionalidades</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['nation'], $dadosAtual['nation'], 'País', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['nation'] != $laterData['nation']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "País: " . $y . $laterData['nation'] . "<br>";
             }
 
             //escolaridades
-            if ($submodulo_id == 14) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 10) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Escolaridades</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //naturalidades
-            if ($submodulo_id == 15) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 11) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Naturalidades</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //generos
-            if ($submodulo_id == 16) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 12) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Gêneros</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //funcoes
-            if ($submodulo_id == 17) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 13) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Funções</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //funcionarios
-            if ($submodulo_id == 18) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['data_nascimento'] != $laterData['data_nascimento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Nascimento: " . $y . $laterData['data_nascimento'] . "<br>";
-
-                if ($beforeData['contratacao_tipo_id'] != $laterData['contratacao_tipo_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['contratacao_tipo_id'] != "") and ($laterData['contratacao_tipo_id'] != 0)) {
-                    $search = ContratacaoTipo::where('id', $laterData['contratacao_tipo_id'])->get(['name']);
-                    $dados .= $x . "Tipo Contratação: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['genero_id'] != $laterData['genero_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['genero_id'] != "") and ($laterData['genero_id'] != 0)) {
-                    $search = Genero::where('id', $laterData['genero_id'])->get(['name']);
-                    $dados .= $x . "Gênero: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['estado_civil_id'] != $laterData['estado_civil_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['estado_civil_id'] != "") and ($laterData['estado_civil_id'] != 0)) {
-                    $search = EstadoCivil::where('id', $laterData['estado_civil_id'])->get(['name']);
-                    $dados .= $x . "Estado Civil: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 14) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Funcionários</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_nascimento'], $dadosAtual['data_nascimento'], 'Data Nascimento', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['contratacao_tipo_id'], $dadosAtual['contratacao_tipo_id'], 'Tipo Contratação', ContratacaoTipo::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['genero_id'], $dadosAtual['genero_id'], 'Gênero', Genero::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['estado_civil_id'], $dadosAtual['estado_civil_id'], 'Estado Civil', EstadoCivil::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['escolaridade_id'], $dadosAtual['escolaridade_id'], 'Escolaridade', Escolaridade::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['nacionalidade_id'], $dadosAtual['nacionalidade_id'], 'Nacionalidade', Nacionalidade::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['naturalidade_id'], $dadosAtual['naturalidade_id'], 'Naturalidade', Naturalidade::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pai'], $dadosAtual['pai'], 'Pai', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['mae'], $dadosAtual['mae'], 'Mãe', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['banco_id'], $dadosAtual['banco_id'], 'Banco', Banco::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['agencia'], $dadosAtual['agencia'], 'Agência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['conta'], $dadosAtual['conta'], 'Conta', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['email'], $dadosAtual['email'], 'E-mail', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_1'], $dadosAtual['telefone_1'], 'Telefone 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_2'], $dadosAtual['telefone_2'], 'Telefone 2', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_1'], $dadosAtual['celular_1'], 'Celular 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_2'], $dadosAtual['celular_2'], 'Celular 2', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['departamento_id'], $dadosAtual['departamento_id'], 'Departamento', Departamento::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['funcao_id'], $dadosAtual['funcao_id'], 'Função', Funcao::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_admissao'], $dadosAtual['data_admissao'], 'Data Admissão', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_demissao'], $dadosAtual['data_demissao'], 'Data Demissão', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_cadastro'], $dadosAtual['data_cadastro'], 'Data Cadastro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_afastamento'], $dadosAtual['data_afastamento'], 'Data Afastamento', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['personal_identidade_orgao_id'], $dadosAtual['personal_identidade_orgao_id'], 'Identidade Pessoal (Órgão)', IdentidadeOrgao::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['personal_identidade_estado_id'], $dadosAtual['personal_identidade_estado_id'], 'Identidade Pessoal (Estado)', Estado::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['personal_identidade_numero'], $dadosAtual['personal_identidade_numero'], 'Identidade Pessoal (Número)', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['personal_identidade_data_emissao'], $dadosAtual['personal_identidade_data_emissao'], 'Identidade Pessoal (Emissão)', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['professional_identidade_orgao_id'], $dadosAtual['professional_identidade_orgao_id'], 'Identidade Profissional (Órgão)', IdentidadeOrgao::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['professional_identidade_estado_id'], $dadosAtual['professional_identidade_estado_id'], 'Identidade Profissional (Estado)', Estado::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['professional_identidade_numero'], $dadosAtual['professional_identidade_numero'], 'Identidade Profissional (Número)', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['professional_identidade_data_emissao'], $dadosAtual['professional_identidade_data_emissao'], 'Identidade Profissional (Emissão)', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cpf'], $dadosAtual['cpf'], 'CPF', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pis'], $dadosAtual['pis'], 'PIS', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pasep'], $dadosAtual['pasep'], 'PASEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['carteira_trabalho'], $dadosAtual['carteira_trabalho'], 'Carteira Trabalho', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cep'], $dadosAtual['cep'], 'CEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero'], $dadosAtual['numero'], 'Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['complemento'], $dadosAtual['complemento'], 'Complemento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['logradouro'], $dadosAtual['logradouro'], 'Logradouro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bairro'], $dadosAtual['bairro'], 'Bairro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['localidade'], $dadosAtual['localidade'], 'Localidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['uf'], $dadosAtual['uf'], 'UF', '', '');
                 }
 
-                if ($beforeData['escolaridade_id'] != $laterData['escolaridade_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+                //Tabela funcionarios_documentos
+                if ($op == 2) {
+                    $dados .= '<b>:: Funcionários Documentos</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['funcionario_id'], $dadosAtual['funcionario_id'], 'Funcionário', Funcionario::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['descricao'], $dadosAtual['descricao'], 'Descrição', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['caminho'], $dadosAtual['caminho'], 'Caminho', '', '');
                 }
-                if (($laterData['escolaridade_id'] != "") and ($laterData['escolaridade_id'] != 0)) {
-                    $search = Escolaridade::where('id', $laterData['escolaridade_id'])->get(['name']);
-                    $dados .= $x . "Escolaridade: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['nacionalidade_id'] != $laterData['nacionalidade_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['nacionalidade_id'] != "") and ($laterData['nacionalidade_id'] != 0)) {
-                    $search = Nacionalidade::where('id', $laterData['nacionalidade_id'])->get(['name']);
-                    $dados .= $x . "Nacionalidade: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['naturalidade_id'] != $laterData['naturalidade_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['naturalidade_id'] != "") and ($laterData['naturalidade_id'] != 0)) {
-                    $search = Naturalidade::where('id', $laterData['naturalidade_id'])->get(['name']);
-                    $dados .= $x . "Naturalidade: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['pai'] != $laterData['pai']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Pai: " . $y . $laterData['pai'] . "<br>";
-
-                if ($beforeData['mae'] != $laterData['mae']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Mãe: " . $y . $laterData['mae'] . "<br>";
-
-                if ($beforeData['banco_id'] != $laterData['banco_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['banco_id'] != "") and ($laterData['banco_id'] != 0)) {
-                    $search = Banco::where('id', $laterData['banco_id'])->get(['name']);
-                    $dados .= $x . "Banco: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['agencia'] != $laterData['agencia']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Agência: " . $y . $laterData['agencia'] . "<br>";
-
-                if ($beforeData['conta'] != $laterData['conta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Conta: " . $y . $laterData['conta'] . "<br>";
-
-                if ($beforeData['email'] != $laterData['email']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "E-mail: " . $y . $laterData['email'] . "<br>";
-
-                if ($beforeData['telefone_1'] != $laterData['telefone_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 1: " . $y . $laterData['telefone_1'] . "<br>";
-
-                if ($beforeData['telefone_2'] != $laterData['telefone_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 2: " . $y . $laterData['telefone_2'] . "<br>";
-
-                if ($beforeData['celular_1'] != $laterData['celular_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 1: " . $y . $laterData['celular_1'] . "<br>";
-
-                if ($beforeData['celular_2'] != $laterData['celular_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 2: " . $y . $laterData['celular_2'] . "<br>";
-
-                if ($beforeData['funcao_id'] != $laterData['funcao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['funcao_id'] != "") and ($laterData['funcao_id'] != 0)) {
-                    $search = Funcao::where('id', $laterData['funcao_id'])->get(['name']);
-                    $dados .= $x . "Função: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['data_admissao'] != $laterData['data_admissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Admissão: " . $y . $laterData['data_admissao'] . "<br>";
-
-                if ($beforeData['data_demissao'] != $laterData['data_demissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Demissão: " . $y . $laterData['data_demissao'] . "<br>";
-
-                if ($beforeData['data_cadastro'] != $laterData['data_cadastro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Cadastro: " . $y . $laterData['data_cadastro'] . "<br>";
-
-                if ($beforeData['data_afastamento'] != $laterData['data_afastamento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Afastamento: " . $y . $laterData['data_afastamento'] . "<br>";
-
-                if ($beforeData['personal_identidade_orgao_id'] != $laterData['personal_identidade_orgao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['personal_identidade_orgao_id'] != "") and ($laterData['personal_identidade_orgao_id'] != 0)) {
-                    $search = IdentidadeOrgao::where('id', $laterData['personal_identidade_orgao_id'])->get(['name']);
-                    $dados .= $x . "Identidade Pessoal (Órgão): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['personal_identidade_estado_id'] != $laterData['personal_identidade_estado_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['personal_identidade_estado_id'] != "") and ($laterData['personal_identidade_estado_id'] != 0)) {
-                    $search = Estado::where('id', $laterData['personal_identidade_estado_id'])->get(['name']);
-                    $dados .= $x . "Identidade Pessoal (Estado): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['personal_identidade_numero'] != $laterData['personal_identidade_numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade Pessoal (Número): " . $y . $laterData['personal_identidade_numero'] . "<br>";
-
-                if ($beforeData['personal_identidade_data_emissao'] != $laterData['personal_identidade_data_emissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade Pessoal (Emissão): " . $y . $laterData['personal_identidade_data_emissao'] . "<br>";
-
-                if ($beforeData['professional_identidade_orgao_id'] != $laterData['professional_identidade_orgao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['professional_identidade_orgao_id'] != "") and ($laterData['professional_identidade_orgao_id'] != 0)) {
-                    $search = IdentidadeOrgao::where('id', $laterData['professional_identidade_orgao_id'])->get(['name']);
-                    $dados .= $x . "Identidade Profissional (Órgão): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['professional_identidade_estado_id'] != $laterData['professional_identidade_estado_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['professional_identidade_estado_id'] != "") and ($laterData['professional_identidade_estado_id'] != 0)) {
-                    $search = Estado::where('id', $laterData['professional_identidade_estado_id'])->get(['name']);
-                    $dados .= $x . "Identidade Profissional (Estado): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['professional_identidade_numero'] != $laterData['professional_identidade_numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade Profissional (Número): " . $y . $laterData['professional_identidade_numero'] . "<br>";
-
-                if ($beforeData['professional_identidade_data_emissao'] != $laterData['professional_identidade_data_emissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade Profissional (Emissão): " . $y . $laterData['professional_identidade_data_emissao'] . "<br>";
-
-                if ($beforeData['cpf'] != $laterData['cpf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CPF: " . $y . $laterData['cpf'] . "<br>";
-
-                if ($beforeData['pis'] != $laterData['pis']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "PIS: " . $y . $laterData['pis'] . "<br>";
-
-                if ($beforeData['pasep'] != $laterData['pasep']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "PASEP: " . $y . $laterData['pasep'] . "<br>";
-
-                if ($beforeData['carteira_trabalho'] != $laterData['carteira_trabalho']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Carteira Trabalho: " . $y . $laterData['carteira_trabalho'] . "<br>";
-
-                if ($beforeData['cep'] != $laterData['cep']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CEP: " . $y . $laterData['cep'] . "<br>";
-
-                if ($beforeData['numero'] != $laterData['numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número: " . $y . $laterData['numero'] . "<br>";
-
-                if ($beforeData['complemento'] != $laterData['complemento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Complemento: " . $y . $laterData['complemento'] . "<br>";
-
-                if ($beforeData['logradouro'] != $laterData['logradouro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Logradouro: " . $y . $laterData['logradouro'] . "<br>";
-
-                if ($beforeData['bairro'] != $laterData['bairro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Bairro: " . $y . $laterData['bairro'] . "<br>";
-
-                if ($beforeData['localidade'] != $laterData['localidade']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Localidade: " . $y . $laterData['localidade'] . "<br>";
-
-                if ($beforeData['uf'] != $laterData['uf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "UF: " . $y . $laterData['uf'] . "<br>";
             }
 
             //identidade_orgaos
-            if ($submodulo_id == 19) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 15) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Identidade Órgãos</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['sigla'], $dadosAtual['sigla'], 'Sigla', '', '');
                 }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['sigla'] != $laterData['sigla']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Sigla: " . $y . $laterData['sigla'] . "<br>";
             }
 
             //clientes
-            if ($submodulo_id == 20) {
-                if ($beforeData['principal_cliente_id'] != $laterData['principal_cliente_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['principal_cliente_id'] != "") and ($laterData['principal_cliente_id'] != 0)) {
-                    $search = Cliente::where('id', $laterData['principal_cliente_id'])->get(['name']);
-                    $dados .= $x . "Cliente Principal: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['responsavel_funcionario_id'] != $laterData['responsavel_funcionario_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['responsavel_funcionario_id'] != "") and ($laterData['responsavel_funcionario_id'] != 0)) {
-                    $search = Funcionario::where('id', $laterData['responsavel_funcionario_id'])->get(['name']);
-                    $dados .= $x . "Responsável: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['status'] != $laterData['status']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Status: " . $y . $laterData['status'] . "<br>";
-
-                if ($beforeData['tipo'] != $laterData['tipo']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Tipo: " . $y . $laterData['tipo'] . "<br>";
-
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['nome_fantasia'] != $laterData['nome_fantasia']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome Fantasia: " . $y . $laterData['nome_fantasia'] . "<br>";
-
-                if ($beforeData['inscricao_estadual'] != $laterData['inscricao_estadual']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Inscrição Estadual: " . $y . $laterData['inscricao_estadual'] . "<br>";
-
-                if ($beforeData['inscricao_municipal'] != $laterData['inscricao_municipal']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Inscrição Municipal: " . $y . $laterData['inscricao_municipal'] . "<br>";
-
-                if ($beforeData['cpf'] != $laterData['cpf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CPF: " . $y . $laterData['cpf'] . "<br>";
-
-                if ($beforeData['cnpj'] != $laterData['cnpj']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CNPJ: " . $y . $laterData['cnpj'] . "<br>";
-
-                if ($beforeData['identidade_orgao_id'] != $laterData['identidade_orgao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['identidade_orgao_id'] != "") and ($laterData['identidade_orgao_id'] != 0)) {
-                    $search = IdentidadeOrgao::where('id', $laterData['identidade_orgao_id'])->get(['name']);
-                    $dados .= $x . "Identidade (Órgão): " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 16) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Clientes</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['principal_cliente_id'], $dadosAtual['principal_cliente_id'], 'Cliente Principal', Cliente::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['status'], $dadosAtual['status'], 'Status', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['tipo'], $dadosAtual['tipo'], 'Tipo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['nome_fantasia'], $dadosAtual['nome_fantasia'], 'Nome Fantasia', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['inscricao_estadual'], $dadosAtual['inscricao_estadual'], 'Inscrição Estadual', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['inscricao_municipal'], $dadosAtual['inscricao_municipal'], 'Inscrição Municipal', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cpf'], $dadosAtual['cpf'], 'CPF', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cnpj'], $dadosAtual['cnpj'], 'CNPJ', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['identidade_orgao_id'], $dadosAtual['identidade_orgao_id'], 'Identidade (Órgão)', IdentidadeOrgao::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['identidade_estado_id'], $dadosAtual['identidade_estado_id'], 'Identidade (Estado)', Estado::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['identidade_numero'], $dadosAtual['identidade_numero'], 'Identidade (Número)', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['identidade_data_emissao'], $dadosAtual['identidade_data_emissao'], 'Identidade (Emissão)', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['genero_id'], $dadosAtual['genero_id'], 'Gênero', Genero::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_nascimento'], $dadosAtual['data_nascimento'], 'Data Nascimento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cep'], $dadosAtual['cep'], 'CEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero'], $dadosAtual['numero'], 'Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['complemento'], $dadosAtual['complemento'], 'Complemento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['logradouro'], $dadosAtual['logradouro'], 'Logradouro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bairro'], $dadosAtual['bairro'], 'Bairro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['localidade'], $dadosAtual['localidade'], 'Localidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['uf'], $dadosAtual['uf'], 'UF', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cep_cobranca'], $dadosAtual['cep_cobranca'], 'CEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero_cobranca'], $dadosAtual['numero_cobranca'], 'Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['complemento_cobranca'], $dadosAtual['complemento_cobranca'], 'Complemento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['logradouro_cobranca'], $dadosAtual['logradouro_cobranca'], 'Logradouro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bairro_cobranca'], $dadosAtual['bairro_cobranca'], 'Bairro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['localidade_cobranca'], $dadosAtual['localidade_cobranca'], 'Localidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['uf_cobranca'], $dadosAtual['uf_cobranca'], 'UF', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['banco_id'], $dadosAtual['banco_id'], 'Banco', Banco::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['agencia'], $dadosAtual['agencia'], 'Agência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['conta'], $dadosAtual['conta'], 'Conta', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['email'], $dadosAtual['email'], 'E-mail', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['site'], $dadosAtual['site'], 'Site', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_1'], $dadosAtual['telefone_1'], 'Telefone 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_2'], $dadosAtual['telefone_2'], 'Telefone 2', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_1'], $dadosAtual['celular_1'], 'Celular 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_2'], $dadosAtual['celular_2'], 'Celular 2', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero_pavimentos'], $dadosAtual['numero_pavimentos'], 'Número Pavimentos', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['altura'], $dadosAtual['altura'], 'Altura', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['area_total_construida'], $dadosAtual['area_total_construida'], 'Área Total Construida', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['lotacao'], $dadosAtual['lotacao'], 'Lotação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['carga_incendio'], $dadosAtual['carga_incendio'], 'Carga Incêndio', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['incendio_risco_id'], $dadosAtual['incendio_risco_id'], 'Incêndio Risco', IncendioRisco::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['edificacao_classificacao_id'], $dadosAtual['edificacao_classificacao_id'], 'Edificação Classificação', EdificacaoClassificacao::class, 'divisao');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['projeto_scip'], $dadosAtual['projeto_scip'], 'Projeto SCIP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['laudo_exigencias'], $dadosAtual['laudo_exigencias'], 'Laudo Exigências', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao'], $dadosAtual['certificado_aprovacao'], 'Certificado Aprovação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_simplificado'], $dadosAtual['certificado_aprovacao_simplificado'], 'Certificado Aprovação Simplificado', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_assistido'], $dadosAtual['certificado_aprovacao_assistido'], 'Certificado Aprovação Assistido', '', '');
                 }
 
-                if ($beforeData['identidade_estado_id'] != $laterData['identidade_estado_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+                //Tabela clientes_seguranca_medidas
+                if ($op == 2) {
+                    $dados .= '<b>:: Clientes Segurança Medidas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pavimento'], $dadosAtual['pavimento'], 'Pavimento', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['cliente_id'], $dadosAtual['cliente_id'], 'Cliente', Cliente::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['seguranca_medida_id'], $dadosAtual['seguranca_medida_id'], 'Segurança Medida', SegurancaMedida::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['quantidade'], $dadosAtual['quantidade'], 'Quantidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['tipo'], $dadosAtual['tipo'], 'Tipo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['observacao'], $dadosAtual['observacao'], 'Observação', '', '');
                 }
-                if (($laterData['identidade_estado_id'] != "") and ($laterData['identidade_estado_id'] != 0)) {
-                    $search = Estado::where('id', $laterData['identidade_estado_id'])->get(['name']);
-                    $dados .= $x . "Identidade (Estado): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['identidade_numero'] != $laterData['identidade_numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade (Número): " . $y . $laterData['identidade_numero'] . "<br>";
-
-                if ($beforeData['identidade_data_emissao'] != $laterData['identidade_data_emissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade (Emissão): " . $y . $laterData['identidade_data_emissao'] . "<br>";
-
-                if ($beforeData['genero_id'] != $laterData['genero_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['genero_id'] != "") and ($laterData['genero_id'] != 0)) {
-                    $search = Genero::where('id', $laterData['genero_id'])->get(['name']);
-                    $dados .= $x . "Gênero: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['data_nascimento'] != $laterData['data_nascimento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Nascimento: " . $y . $laterData['data_nascimento'] . "<br>";
-
-                if ($beforeData['cep'] != $laterData['cep']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CEP: " . $y . $laterData['cep'] . "<br>";
-
-                if ($beforeData['numero'] != $laterData['numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número: " . $y . $laterData['numero'] . "<br>";
-
-                if ($beforeData['complemento'] != $laterData['complemento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Complemento: " . $y . $laterData['complemento'] . "<br>";
-
-                if ($beforeData['logradouro'] != $laterData['logradouro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Logradouro: " . $y . $laterData['logradouro'] . "<br>";
-
-                if ($beforeData['bairro'] != $laterData['bairro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Bairro: " . $y . $laterData['bairro'] . "<br>";
-
-                if ($beforeData['localidade'] != $laterData['localidade']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Localidade: " . $y . $laterData['localidade'] . "<br>";
-
-                if ($beforeData['uf'] != $laterData['uf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "UF: " . $y . $laterData['uf'] . "<br>";
-
-                if ($beforeData['cep_cobranca'] != $laterData['cep_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CEP Cobrança: " . $y . $laterData['cep_cobranca'] . "<br>";
-
-                if ($beforeData['numero_cobranca'] != $laterData['numero_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número Cobrança: " . $y . $laterData['numero_cobranca'] . "<br>";
-
-                if ($beforeData['complemento_cobranca'] != $laterData['complemento_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Complemento Cobrança: " . $y . $laterData['complemento_cobranca'] . "<br>";
-
-                if ($beforeData['logradouro_cobranca'] != $laterData['logradouro_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Logradouro Cobrança: " . $y . $laterData['logradouro_cobranca'] . "<br>";
-
-                if ($beforeData['bairro_cobranca'] != $laterData['bairro_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Bairro Cobrança: " . $y . $laterData['bairro_cobranca'] . "<br>";
-
-                if ($beforeData['localidade_cobranca'] != $laterData['localidade_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Localidade Cobrança: " . $y . $laterData['localidade_cobranca'] . "<br>";
-
-                if ($beforeData['uf_cobranca'] != $laterData['uf_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "UF Cobrança: " . $y . $laterData['uf_cobranca'] . "<br>";
-
-                if ($beforeData['banco_id'] != $laterData['banco_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['banco_id'] != "") and ($laterData['banco_id'] != 0)) {
-                    $search = Banco::where('id', $laterData['banco_id'])->get(['name']);
-                    $dados .= $x . "Banco: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['agencia'] != $laterData['agencia']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Agência: " . $y . $laterData['agencia'] . "<br>";
-
-                if ($beforeData['conta'] != $laterData['conta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Conta: " . $y . $laterData['conta'] . "<br>";
-
-                if ($beforeData['email'] != $laterData['email']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "E-mail: " . $y . $laterData['email'] . "<br>";
-
-                if ($beforeData['site'] != $laterData['site']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Site: " . $y . $laterData['site'] . "<br>";
-
-                if ($beforeData['telefone_1'] != $laterData['telefone_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 1: " . $y . $laterData['telefone_1'] . "<br>";
-
-                if ($beforeData['telefone_2'] != $laterData['telefone_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 2: " . $y . $laterData['telefone_2'] . "<br>";
-
-                if ($beforeData['celular_1'] != $laterData['celular_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 1: " . $y . $laterData['celular_1'] . "<br>";
-
-                if ($beforeData['celular_2'] != $laterData['celular_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 2: " . $y . $laterData['celular_2'] . "<br>";
             }
 
             //fornecedores
-            if ($submodulo_id == 23) {
-                if ($beforeData['status'] != $laterData['status']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+            if ($submodulo_id == 18) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Fornecedores</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['status'], $dadosAtual['status'], 'Status', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['tipo'], $dadosAtual['tipo'], 'Tipo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['nome_fantasia'], $dadosAtual['nome_fantasia'], 'Nome Fantasia', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['inscricao_estadual'], $dadosAtual['inscricao_estadual'], 'Inscrição Estadual', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['inscricao_municipal'], $dadosAtual['inscricao_municipal'], 'Inscrição Municipal', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cpf'], $dadosAtual['cpf'], 'CPF', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cnpj'], $dadosAtual['cnpj'], 'CNPJ', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['identidade_orgao_id'], $dadosAtual['identidade_orgao_id'], 'Identidade (Órgão)', IdentidadeOrgao::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['identidade_estado_id'], $dadosAtual['identidade_estado_id'], 'Identidade (Estado)', Estado::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['identidade_numero'], $dadosAtual['identidade_numero'], 'Identidade (Número)', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['identidade_data_emissao'], $dadosAtual['identidade_data_emissao'], 'Identidade (Emissão)', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['genero_id'], $dadosAtual['genero_id'], 'Gênero', Genero::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_nascimento'], $dadosAtual['data_nascimento'], 'Data Nascimento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cep'], $dadosAtual['cep'], 'CEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero'], $dadosAtual['numero'], 'Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['complemento'], $dadosAtual['complemento'], 'Complemento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['logradouro'], $dadosAtual['logradouro'], 'Logradouro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bairro'], $dadosAtual['bairro'], 'Bairro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['localidade'], $dadosAtual['localidade'], 'Localidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['uf'], $dadosAtual['uf'], 'UF', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cep_cobranca'], $dadosAtual['cep_cobranca'], 'CEP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero_cobranca'], $dadosAtual['numero_cobranca'], 'Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['complemento_cobranca'], $dadosAtual['complemento_cobranca'], 'Complemento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['logradouro_cobranca'], $dadosAtual['logradouro_cobranca'], 'Logradouro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bairro_cobranca'], $dadosAtual['bairro_cobranca'], 'Bairro', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['localidade_cobranca'], $dadosAtual['localidade_cobranca'], 'Localidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['uf_cobranca'], $dadosAtual['uf_cobranca'], 'UF', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['banco_id'], $dadosAtual['banco_id'], 'Banco', Banco::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['agencia'], $dadosAtual['agencia'], 'Agência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['conta'], $dadosAtual['conta'], 'Conta', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['email'], $dadosAtual['email'], 'E-mail', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['site'], $dadosAtual['site'], 'Site', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_1'], $dadosAtual['telefone_1'], 'Telefone 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['telefone_2'], $dadosAtual['telefone_2'], 'Telefone 2', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_1'], $dadosAtual['celular_1'], 'Celular 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['celular_2'], $dadosAtual['celular_2'], 'Celular 2', '', '');
                 }
-                $dados .= $x . "Status: " . $y . $laterData['status'] . "<br>";
-
-                if ($beforeData['tipo'] != $laterData['tipo']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Tipo: " . $y . $laterData['tipo'] . "<br>";
-
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['nome_fantasia'] != $laterData['nome_fantasia']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome Fantasia: " . $y . $laterData['nome_fantasia'] . "<br>";
-
-                if ($beforeData['inscricao_estadual'] != $laterData['inscricao_estadual']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Inscrição Estadual: " . $y . $laterData['inscricao_estadual'] . "<br>";
-
-                if ($beforeData['inscricao_municipal'] != $laterData['inscricao_municipal']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Inscrição Municipal: " . $y . $laterData['inscricao_municipal'] . "<br>";
-
-                if ($beforeData['cpf'] != $laterData['cpf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CPF: " . $y . $laterData['cpf'] . "<br>";
-
-                if ($beforeData['cnpj'] != $laterData['cnpj']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CNPJ: " . $y . $laterData['cnpj'] . "<br>";
-
-                if ($beforeData['identidade_orgao_id'] != $laterData['identidade_orgao_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['identidade_orgao_id'] != "") and ($laterData['identidade_orgao_id'] != 0)) {
-                    $search = IdentidadeOrgao::where('id', $laterData['identidade_orgao_id'])->get(['name']);
-                    $dados .= $x . "Identidade (Órgão): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['identidade_estado_id'] != $laterData['identidade_estado_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['identidade_estado_id'] != "") and ($laterData['identidade_estado_id'] != 0)) {
-                    $search = Estado::where('id', $laterData['identidade_estado_id'])->get(['name']);
-                    $dados .= $x . "Identidade (Estado): " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['identidade_numero'] != $laterData['identidade_numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade (Número): " . $y . $laterData['identidade_numero'] . "<br>";
-
-                if ($beforeData['identidade_data_emissao'] != $laterData['identidade_data_emissao']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Identidade (Emissão): " . $y . $laterData['identidade_data_emissao'] . "<br>";
-
-                if ($beforeData['genero_id'] != $laterData['genero_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['genero_id'] != "") and ($laterData['genero_id'] != 0)) {
-                    $search = Genero::where('id', $laterData['genero_id'])->get(['name']);
-                    $dados .= $x . "Gênero: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['data_nascimento'] != $laterData['data_nascimento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Nascimento: " . $y . $laterData['data_nascimento'] . "<br>";
-
-                if ($beforeData['cep'] != $laterData['cep']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CEP: " . $y . $laterData['cep'] . "<br>";
-
-                if ($beforeData['numero'] != $laterData['numero']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número: " . $y . $laterData['numero'] . "<br>";
-
-                if ($beforeData['complemento'] != $laterData['complemento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Complemento: " . $y . $laterData['complemento'] . "<br>";
-
-                if ($beforeData['logradouro'] != $laterData['logradouro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Logradouro: " . $y . $laterData['logradouro'] . "<br>";
-
-                if ($beforeData['bairro'] != $laterData['bairro']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Bairro: " . $y . $laterData['bairro'] . "<br>";
-
-                if ($beforeData['localidade'] != $laterData['localidade']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Localidade: " . $y . $laterData['localidade'] . "<br>";
-
-                if ($beforeData['uf'] != $laterData['uf']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "UF: " . $y . $laterData['uf'] . "<br>";
-
-                if ($beforeData['cep_cobranca'] != $laterData['cep_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "CEP Cobrança: " . $y . $laterData['cep_cobranca'] . "<br>";
-
-                if ($beforeData['numero_cobranca'] != $laterData['numero_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número Cobrança: " . $y . $laterData['numero_cobranca'] . "<br>";
-
-                if ($beforeData['complemento_cobranca'] != $laterData['complemento_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Complemento Cobrança: " . $y . $laterData['complemento_cobranca'] . "<br>";
-
-                if ($beforeData['logradouro_cobranca'] != $laterData['logradouro_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Logradouro Cobrança: " . $y . $laterData['logradouro_cobranca'] . "<br>";
-
-                if ($beforeData['bairro_cobranca'] != $laterData['bairro_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Bairro Cobrança: " . $y . $laterData['bairro_cobranca'] . "<br>";
-
-                if ($beforeData['localidade_cobranca'] != $laterData['localidade_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Localidade Cobrança: " . $y . $laterData['localidade_cobranca'] . "<br>";
-
-                if ($beforeData['uf_cobranca'] != $laterData['uf_cobranca']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "UF Cobrança: " . $y . $laterData['uf_cobranca'] . "<br>";
-
-                if ($beforeData['banco_id'] != $laterData['banco_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['banco_id'] != "") and ($laterData['banco_id'] != 0)) {
-                    $search = Banco::where('id', $laterData['banco_id'])->get(['name']);
-                    $dados .= $x . "Banco: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['agencia'] != $laterData['agencia']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Agência: " . $y . $laterData['agencia'] . "<br>";
-
-                if ($beforeData['conta'] != $laterData['conta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Conta: " . $y . $laterData['conta'] . "<br>";
-
-                if ($beforeData['email'] != $laterData['email']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "E-mail: " . $y . $laterData['email'] . "<br>";
-
-                if ($beforeData['site'] != $laterData['site']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Site: " . $y . $laterData['site'] . "<br>";
-
-                if ($beforeData['telefone_1'] != $laterData['telefone_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 1: " . $y . $laterData['telefone_1'] . "<br>";
-
-                if ($beforeData['telefone_2'] != $laterData['telefone_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Telefone 2: " . $y . $laterData['telefone_2'] . "<br>";
-
-                if ($beforeData['celular_1'] != $laterData['celular_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 1: " . $y . $laterData['celular_1'] . "<br>";
-
-                if ($beforeData['celular_2'] != $laterData['celular_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Celular 2: " . $y . $laterData['celular_2'] . "<br>";
-            }
-
-            //Serviço Tipos
-            if ($submodulo_id == 24) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
             }
 
             //Serviços
-            if ($submodulo_id == 25) {
-                if ($beforeData['name'] != $laterData['name']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Nome: " . $y . $laterData['name'] . "<br>";
-
-                if ($beforeData['servico_tipo_id'] != $laterData['servico_tipo_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['servico_tipo_id'] != "") and ($laterData['servico_tipo_id'] != 0)) {
-                    $search = ServicoTipo::where('id', $laterData['servico_tipo_id'])->get(['name']);
-                    $dados .= $x . "Serviço Tipo: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 20) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Serviços</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['servico_tipo_id'], $dadosAtual['servico_tipo_id'], 'Serviço Tipo', ServicoTipo::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['valor'], $dadosAtual['valor'], 'Valor', '', '');
                 }
             }
 
             //Propostas
-            if ($submodulo_id == 26) {
-                if ($beforeData['data_proposta'] != $laterData['data_proposta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Proposta: " . $y . $laterData['data_proposta'] . "<br>";
-
-                if ($beforeData['numero_proposta'] != $laterData['numero_proposta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Número Proposta: " . $y . $laterData['numero_proposta'] . "<br>";
-
-                if ($beforeData['ano_proposta'] != $laterData['ano_proposta']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Ano Proposta: " . $y . $laterData['ano_proposta'] . "<br>";
-
-                if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['cliente_id'] != "") and ($laterData['cliente_id'] != 0)) {
-                    $search = Cliente::where('id', $laterData['cliente_id'])->get(['name']);
-                    $dados .= $x . "Cliente: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 21) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Propostas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_proposta'], $dadosAtual['data_proposta'], 'Data Proposta', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero_proposta'], $dadosAtual['numero_proposta'], 'Número Proposta', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['ano_proposta'], $dadosAtual['ano_proposta'], 'Ano Proposta', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['cliente_id'], $dadosAtual['cliente_id'], 'Cliente', Cliente::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cliente_nome'], $dadosAtual['cliente_nome'], 'Cliente Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['aos_cuidados'], $dadosAtual['aos_cuidados'], 'Aos Cuidados', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['texto_acima_tabela_servico'], $dadosAtual['texto_acima_tabela_servico'], 'Texto Acima Tabela Serviço', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['porcentagem_desconto'], $dadosAtual['porcentagem_desconto'], 'Porcentagem Desconto', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['valor_desconto'], $dadosAtual['valor_desconto'], 'Valor Desconto', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['valor_total'], $dadosAtual['valor_total'], 'Valor Total', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['forma_pagamento'], $dadosAtual['forma_pagamento'], 'Forma Pagamento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_1'], $dadosAtual['paragrafo_1'], 'Generalidade 1', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_2'], $dadosAtual['paragrafo_2'], 'Generalidade 2', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_3'], $dadosAtual['paragrafo_3'], 'Generalidade 3', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_4'], $dadosAtual['paragrafo_4'], 'Generalidade 4', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_5'], $dadosAtual['paragrafo_5'], 'Generalidade 5', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_6'], $dadosAtual['paragrafo_6'], 'Generalidade 6', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_7'], $dadosAtual['paragrafo_7'], 'Generalidade 7', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_8'], $dadosAtual['paragrafo_8'], 'Generalidade 8', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_9'], $dadosAtual['paragrafo_9'], 'Generalidade 9', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['paragrafo_10'], $dadosAtual['paragrafo_10'], 'Generalidade 10', '', '');
                 }
 
-                if ($beforeData['cliente_nome'] != $laterData['cliente_nome']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
+                //Tabela propostas_servicos
+                if ($op == 2) {
+                    $dados .= '<b>:: Propostas Serviços</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(4, $dadosAnterior['proposta_id'], $dadosAtual['proposta_id'], 'Cliente/Data/Número', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['servico_id'], $dadosAtual['servico_id'], 'Serviço', Servico::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['servico_item'], $dadosAtual['servico_item'], 'Serviço Item', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['servico_nome'], $dadosAtual['servico_nome'], 'Serviço Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['servico_valor'], $dadosAtual['servico_valor'], 'Serviço Valor', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['servico_quantidade'], $dadosAtual['servico_quantidade'], 'Serviço Quantidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['servico_valor_total'], $dadosAtual['servico_valor_total'], 'Serviço Valor Total', '', '');
                 }
-                $dados .= $x . "Cliente Nome: " . $y . $laterData['cliente_nome'] . "<br>";
-
-                if ($beforeData['aos_cuidados'] != $laterData['aos_cuidados']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Aos Cuidados: " . $y . $laterData['aos_cuidados'] . "<br>";
-
-                if ($beforeData['texto_acima_tabela_servico'] != $laterData['texto_acima_tabela_servico']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Texto Acima Tabela Serviço: " . $y . $laterData['texto_acima_tabela_servico'] . "<br>";
-
-                if ($beforeData['porcentagem_desconto'] != $laterData['porcentagem_desconto']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Porcentagem Desconto: " . $y . $laterData['porcentagem_desconto'] . "<br>";
-
-                if ($beforeData['valor_desconto'] != $laterData['valor_desconto']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Valor Desconto: " . $y . $laterData['valor_desconto'] . "<br>";
-
-                if ($beforeData['valor_total'] != $laterData['valor_total']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Valor Total: " . $y . $laterData['valor_total'] . "<br>";
-
-                if ($beforeData['forma_pagamento'] != $laterData['forma_pagamento']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Forma Pagamento: " . $y . $laterData['forma_pagamento'] . "<br>";
-
-                if ($beforeData['paragrafo_1'] != $laterData['paragrafo_1']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 1: " . $y . $laterData['paragrafo_1'] . "<br>";
-
-                if ($beforeData['paragrafo_2'] != $laterData['paragrafo_2']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 2: " . $y . $laterData['paragrafo_2'] . "<br>";
-
-                if ($beforeData['paragrafo_3'] != $laterData['paragrafo_3']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 3: " . $y . $laterData['paragrafo_3'] . "<br>";
-
-                if ($beforeData['paragrafo_4'] != $laterData['paragrafo_4']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 4: " . $y . $laterData['paragrafo_4'] . "<br>";
-
-                if ($beforeData['paragrafo_5'] != $laterData['paragrafo_5']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 5: " . $y . $laterData['paragrafo_5'] . "<br>";
-
-                if ($beforeData['paragrafo_6'] != $laterData['paragrafo_6']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 6: " . $y . $laterData['paragrafo_6'] . "<br>";
-
-                if ($beforeData['paragrafo_7'] != $laterData['paragrafo_7']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 7: " . $y . $laterData['paragrafo_7'] . "<br>";
-
-                if ($beforeData['paragrafo_8'] != $laterData['paragrafo_8']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 8: " . $y . $laterData['paragrafo_8'] . "<br>";
-
-                if ($beforeData['paragrafo_9'] != $laterData['paragrafo_9']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 9: " . $y . $laterData['paragrafo_9'] . "<br>";
-
-                if ($beforeData['paragrafo_10'] != $laterData['paragrafo_10']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Generalidade 10: " . $y . $laterData['paragrafo_10'] . "<br>";
             }
 
             //Visitas Técnicas
-            if ($submodulo_id == 27) {
-                if ($beforeData['visita_tecnica_status_id'] != $laterData['visita_tecnica_status_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['visita_tecnica_status_id'] != "") and ($laterData['visita_tecnica_status_id'] != 0)) {
-                    $search = VisitaTecnicaStatus::where('id', $laterData['visita_tecnica_status_id'])->get(['name']);
-                    $dados .= $x . "Status: " . $y . $search[0]['name'] . "<br>";
+            if ($submodulo_id == 22) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Visitas Técnicas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(3, $dadosAnterior['cliente_servico_id'], $dadosAtual['cliente_servico_id'], 'Cliente/Serviço', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['numero_pavimentos'], $dadosAtual['numero_pavimentos'], 'Número Pavimentos', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['altura'], $dadosAtual['altura'], 'Altura', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['area_total_construida'], $dadosAtual['area_total_construida'], 'Área Total Construida', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['lotacao'], $dadosAtual['lotacao'], 'Lotação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['carga_incendio'], $dadosAtual['carga_incendio'], 'Carga Incêndio', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['incendio_risco'], $dadosAtual['incendio_risco'], 'Incêndio Risco', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['grupo'], $dadosAtual['grupo'], 'Grupo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['ocupacao_uso'], $dadosAtual['ocupacao_uso'], 'Ocupação Uso', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['divisao'], $dadosAtual['divisao'], 'Divisão', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['descricao'], $dadosAtual['descricao'], 'Descrição', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['definicao'], $dadosAtual['definicao'], 'Definição', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['projeto_scip'], $dadosAtual['projeto_scip'], 'Projeto SCIP', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['projeto_scip_numero'], $dadosAtual['projeto_scip_numero'], 'Projeto SCIP Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['laudo_exigencias'], $dadosAtual['laudo_exigencias'], 'Laudo Exigências', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['laudo_exigencias_numero'], $dadosAtual['laudo_exigencias_numero'], 'Laudo Exigências Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['laudo_exigencias_data_emissao'], $dadosAtual['laudo_exigencias_data_emissao'], 'Laudo Exig~encias Data Emissão', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['laudo_exigencias_data_vencimento'], $dadosAtual['laudo_exigencias_data_vencimento'], 'Laudo Exigências Data Vencimento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao'], $dadosAtual['certificado_aprovacao'], 'Certificado Aprovação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_numero'], $dadosAtual['certificado_aprovacao_numero'], 'Certificado Aprovação Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_simplificado'], $dadosAtual['certificado_aprovacao_simplificado'], 'Certificado Aprovação Simplificado', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_simplificado_numero'], $dadosAtual['certificado_aprovacao_simplificado_numero'], 'Certificado Aprovação Simplificado Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_assistido'], $dadosAtual['certificado_aprovacao_assistido'], 'Certificado Aprovação Assistido', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['certificado_aprovacao_assistido_numero'], $dadosAtual['certificado_aprovacao_assistido_numero'], 'Certificado Aprovação Assistido Número', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['executado_data'], $dadosAtual['executado_data'], 'Executado Data', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['executado_user_id'], $dadosAtual['executado_user_id'], 'Usuário', User::class, 'name');
                 }
 
-                if ($beforeData['cliente_id'] != $laterData['cliente_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['cliente_id'] != "") and ($laterData['cliente_id'] != 0)) {
-                    $search = Cliente::where('id', $laterData['cliente_id'])->get(['name']);
-                    $dados .= $x . "Cliente: " . $y . $search[0]['name'] . "<br>";
-                }
-
-                if ($beforeData['data_visita'] != $laterData['data_visita']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                $dados .= $x . "Data Visita: " . $y . $laterData['data_visita'] . "<br>";
-
-                if ($beforeData['responsavel_funcionario_id'] != $laterData['responsavel_funcionario_id']) {
-                    $x = "<font class='text-danger'>";
-                    $y = "</font>";
-                } else {
-                    $x = "";
-                    $y = "";
-                }
-                if (($laterData['responsavel_funcionario_id'] != "") and ($laterData['responsavel_funcionario_id'] != 0)) {
-                    $search = Funcionario::where('id', $laterData['responsavel_funcionario_id'])->get(['name']);
-                    $dados .= $x . "Responsavel: " . $y . $search[0]['name'] . "<br>";
+                //Tabela visitas_tecnicas_seguranca_medidas
+                if ($op == 2) {
+                    $dados .= '<b>:: Visitas Técnicas Segurança Medidas</b>' . '<br><br>';
+                    $dados .= $this->retornaDado(8, $dadosAnterior['visita_tecnica_id'], $dadosAtual['visita_tecnica_id'], 'Visita Técnica', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pavimento'], $dadosAtual['pavimento'], 'Pavimento', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['seguranca_medida_id'], $dadosAtual['seguranca_medida_id'], 'Segurança Medida', SegurancaMedida::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_nome'], $dadosAtual['seguranca_medida_nome'], 'Segurança Medida Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_quantidade'], $dadosAtual['seguranca_medida_quantidade'], 'Segurança Medida Quantidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_tipo'], $dadosAtual['seguranca_medida_tipo'], 'Segurança Medida Tipo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_observacao'], $dadosAtual['seguranca_medida_observacao'], 'Segurança Medida Observação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['conferencia'], $dadosAtual['conferencia'], 'Conferência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['observacao'], $dadosAtual['observacao'], 'Observação', '', '');
                 }
             }
 
-            //gravar transacao'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            //Brigadas Incêndios
+            if ($submodulo_id == 23) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Brigadas Incêndios</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['empresa_id'], $dadosAtual['empresa_id'], 'Empresa', Empresa::class, 'name');
+                    $dados .= $this->retornaDado(3, $dadosAnterior['cliente_servico_id'], $dadosAtual['cliente_servico_id'], 'Cliente/Serviço', '', '');
+                }
+
+                //Tabela brigadas_escalas
+                if ($op == 2) {
+                    $dados .= '<b>:: Brigadas Incêndios Escalas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(5, $dadosAnterior['brigada_id'], $dadosAtual['brigada_id'], 'Brigada', Brigada::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['cliente_id'], $dadosAtual['cliente_id'], 'Cliente', Cliente::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['cliente_nome'], $dadosAtual['cliente_nome'], 'Cliente Nome', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['escala_tipo_id'], $dadosAtual['escala_tipo_id'], 'Escala Tipo', EscalaTipo::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['escala_tipo_nome'], $dadosAtual['escala_tipo_nome'], 'Escala Tipo Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['quantidade_alas'], $dadosAtual['quantidade_alas'], 'Quantidade Alas', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['quantidade_brigadistas_por_ala'], $dadosAtual['quantidade_brigadistas_por_ala'], 'Quantidade Brigadistas por Ala', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['quantidade_brigadistas_total'], $dadosAtual['quantidade_brigadistas_total'], 'Quantidade Brigadistas Total', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_inicio_ala'], $dadosAtual['hora_inicio_ala'], 'Hora Inicio Ala', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_chegada'], $dadosAtual['data_chegada'], 'Data Chegada', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_chegada'], $dadosAtual['hora_chegada'], 'Hora Chegada', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_saida'], $dadosAtual['data_saida'], 'Data Saída', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_saida'], $dadosAtual['hora_saida'], 'Hora Saída', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['funcionario_id'], $dadosAtual['funcionario_id'], 'Funcionário', Funcionario::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['funcionario_nome'], $dadosAtual['funcionario_nome'], 'Funcionário Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['ala'], $dadosAtual['ala'], 'Ala', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['escala_frequencia_id'], $dadosAtual['escala_frequencia_id'], 'Escala Frequência', EscalaFrequencia::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_chegada_real'], $dadosAtual['data_chegada_real'], 'Data Chegada Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_chegada_real'], $dadosAtual['hora_chegada_real'], 'Hora Chegada Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_saida_real'], $dadosAtual['data_saida_real'], 'Data Saída Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_saida_real'], $dadosAtual['hora_saida_real'], 'Hora Saída Real', '', '');
+                }
+
+                //Tabela brigadas_rondas
+                if ($op == 3) {
+                    $dados .= '<b>:: Brigadas Incêndios Rondas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(6, $dadosAnterior['brigada_escala_id'], $dadosAtual['brigada_escala_id'], 'Brigada', Brigada::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data'], $dadosAtual['data'], 'Data', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora'], $dadosAtual['hora'], 'Hora', '', '');
+                }
+
+                //Tabela brigadas_rondas_seguranca_medidas
+                if ($op == 4) {
+                    $dados .= '<b>:: Brigadas Incêndios Rondas Segurança Medidas</b>' . '<br><br>';
+                    $dados .= $this->retornaDado(7, $dadosAnterior['brigada_ronda_id'], $dadosAtual['brigada_ronda_id'], 'Brigada', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['pavimento'], $dadosAtual['pavimento'], 'Pavimento', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['seguranca_medida_id'], $dadosAtual['seguranca_medida_id'], 'Segurança Medida', SegurancaMedida::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_nome'], $dadosAtual['seguranca_medida_nome'], 'Segurança Medida Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_quantidade'], $dadosAtual['seguranca_medida_quantidade'], 'Segurança Medida Quantidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_tipo'], $dadosAtual['seguranca_medida_tipo'], 'Segurança Medida Tipo', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_observacao'], $dadosAtual['seguranca_medida_observacao'], 'Segurança Medida Observação', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['conferencia'], $dadosAtual['conferencia'], 'Conferência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['observacao'], $dadosAtual['observacao'], 'Observação', '', '');
+                }
+
+                //Tabela brigadas_escalas (frequencia)
+                if ($op == 5) {
+                    $dados .= '<b>:: Brigadas Incêndios Escalas (Frequência)</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(5, $dadosAnterior['brigada_id'], $dadosAtual['brigada_id'], 'Brigada', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['escala_frequencia_id'], $dadosAtual['escala_frequencia_id'], 'Escala Frequência', EscalaFrequencia::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_chegada_real'], $dadosAtual['data_chegada_real'], 'Data Chegada Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_chegada_real'], $dadosAtual['hora_chegada_real'], 'Hora Chegada Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_saida_real'], $dadosAtual['data_saida_real'], 'Data Saída Real', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_saida_real'], $dadosAtual['hora_saida_real'], 'Hora Saída Real', '', '');
+                }
+            }
+
+            //empresas
+            if ($submodulo_id == 24) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Empresas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(1, $dadosAnterior['name'], $dadosAtual['name'], 'Nome', '', '');
+                }
+            }
+
+            //Clientes Servicos
+            if ($submodulo_id == 25) {
+                if ($op == 1) {
+                    $dados .= '<b>:: Clientes Serviços</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(2, $dadosAnterior['cliente_id'], $dadosAtual['cliente_id'], 'Cliente', Cliente::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['servico_id'], $dadosAtual['servico_id'], 'Serviço', Servico::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['servico_status_id'], $dadosAtual['servico_status_id'], 'Serviço Status', ServicoStatus::class, 'name');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['responsavel_funcionario_id'], $dadosAtual['responsavel_funcionario_id'], 'Responsável Funcionário', Funcionario::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['quantidade'], $dadosAtual['quantidade'], 'Quantidade', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_inicio'], $dadosAtual['data_inicio'], 'Data Início', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_fim'], $dadosAtual['data_fim'], 'Data Fim', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_vencimento'], $dadosAtual['data_vencimento'], 'Data Vencimento', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['valor'], $dadosAtual['valor'], 'Valor', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['bi_escala_tipo_id'], $dadosAtual['bi_escala_tipo_id'], 'Escala Tipo', EscalaTipo::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bi_quantidade_alas_escala'], $dadosAtual['bi_quantidade_alas_escala'], 'Quantidade Alas Escala', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bi_quantidade_brigadistas_por_ala'], $dadosAtual['bi_quantidade_brigadistas_por_ala'], 'Quantidade Brigadistas por Ala', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bi_quantidade_brigadistas_total'], $dadosAtual['bi_quantidade_brigadistas_total'], 'Quantidade Brigadistas Total', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['bi_hora_inicio_ala'], $dadosAtual['bi_hora_inicio_ala'], 'Hora Início Ala', '', '');
+                }
+
+                //Tabela clientes_servicos_brigadistas
+                if ($op == 2) {
+                    $dados .= '<b>:: Clientes Serviços Brigadistas</b>'.'<br><br>';
+                    $dados .= $this->retornaDado(3, $dadosAnterior['cliente_servico_id'], $dadosAtual['cliente_servico_id'], 'Cliente/Serviço', '', '');
+                    $dados .= $this->retornaDado(2, $dadosAnterior['funcionario_id'], $dadosAtual['funcionario_id'], 'Funcionário', Funcionario::class, 'name');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['funcionario_nome'], $dadosAtual['funcionario_nome'], 'Funcionário Nome', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['ala'], $dadosAtual['ala'], 'Ala', '', '');
+                }
+            }
+
+            //Verificando se é uma alteração e pode gravar (caso nenhum campo tenha sido alterado não deixar gravar)''''
+            if ($operacao == 2 and $this->gravarAlteracao === false) {
+                $dados = '';
+            } else {
+                $this->gravarAlteracao = false;
+            }
+            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+            //gravar transacao''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             if ($dados != '') {
                 $trasaction = Array();
+
+                $trasaction['empresa_id'] = Auth::user()->empresa_id;
                 $trasaction['date'] = date('Y-m-d');
                 $trasaction['time'] = date('H:i:s');
                 $trasaction['user_id'] = Auth::user()->id;
@@ -1947,7 +756,7 @@ class Transacoes
 
                 Transacao::create($trasaction);
             }
-            //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
         }
 
         return true;

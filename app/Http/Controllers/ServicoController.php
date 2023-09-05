@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\ServicoStoreRequest;
 use App\Http\Requests\ServicoUpdateRequest;
+use App\Models\PropostaServico;
 use App\Models\ServicoTipo;
-use Illuminate\Support\Facades\DB;
 use App\Models\Servico;
 
 class ServicoController extends Controller
@@ -18,11 +19,12 @@ class ServicoController extends Controller
         $this->servico = $servico;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
-        $registros = DB::table('servicos')
-            ->leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
+        $registros = $this->servico
+            ::leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
             ->select(['servicos.*', 'servico_tipos.name as servicoTipoName'])
+            ->where('servicos.empresa_id', $empresa_id)
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -36,6 +38,16 @@ class ServicoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Verificar se pode alterar os campos name e servico_tipo_id - para não afetar outros submódulos
+                $qtd = 0;
+                $qtd += SuporteFacade::verificarRelacionamento('propostas_servicos', 'servico_id', $id);
+                $qtd += SuporteFacade::verificarRelacionamento('clientes_servicos', 'servico_id', $id);
+
+                if ($qtd > 0) {$readonly = true;} else {$readonly = false;}
+
+                $registro['servico_readonly_campos'] = $readonly;
+
+                //Retorno
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
@@ -47,7 +59,7 @@ class ServicoController extends Controller
         }
     }
 
-    public function auxiliary()
+    public function auxiliary($empresa_id)
     {
         try {
             $registros = array();
@@ -65,18 +77,14 @@ class ServicoController extends Controller
         }
     }
 
-    public function store(ServicoStoreRequest $request)
+    public function store(ServicoStoreRequest $request, $empresa_id)
     {
         try {
-            //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            $valor = $request['valor'];
-            $valor = str_replace('.', '', $valor);
-            $valor = str_replace('.', '', $valor);
-            $valor = str_replace('.', '', $valor);
-            $valor = str_replace(',', '.', $valor);
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
 
-            $request['valor'] = $valor;
-            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
 
             //Incluindo registro
             $this->servico->create($request->all());
@@ -91,7 +99,7 @@ class ServicoController extends Controller
         }
     }
 
-    public function update(ServicoUpdateRequest $request, $id)
+    public function update(ServicoUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->servico->find($id);
@@ -99,16 +107,10 @@ class ServicoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                $valor = $request['valor'];
-                $valor = str_replace('.', '', $valor);
-                $valor = str_replace('.', '', $valor);
-                $valor = str_replace('.', '', $valor);
-                $valor = str_replace(',', '.', $valor);
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                $request['valor'] = $valor;
-                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+                //Alterando registro
                 $registro->update($request->all());
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
@@ -122,7 +124,7 @@ class ServicoController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->servico->find($id);
@@ -130,12 +132,18 @@ class ServicoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Propostas
-                $qtd = DB::table('propostas_servicos')->where('servico_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Propostas.', 2040, null, null), 200);
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela propostas_servicos
+                if (SuporteFacade::verificarRelacionamento('propostas_servicos', 'servico_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir.<br>Registro relacionado em Propostas Serviços.', 2040, null, null), 200);
+                }
+
+                //Tabela clientes_servicos
+                if (SuporteFacade::verificarRelacionamento('clientes_servicos', 'servico_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir.<br>Registro relacionado em Clientes Serviços.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -154,22 +162,24 @@ class ServicoController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
-        $registros = DB::table('servicos')
-            ->leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
+        $registros = $this->servico
+            ::leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
             ->select(['servicos.*', 'servico_tipos.name as servicoTipoName'])
+            ->where('servicos.empresa_id', '=', $empresa_id)
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
-        $registros = DB::table('servicos')
-            ->leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
+        $registros = $this->servico
+            ::leftJoin('servico_tipos', 'servicos.servico_tipo_id', '=', 'servico_tipos.id')
             ->select(['servicos.*', 'servico_tipos.name as servicoTipoName'])
+            ->where('servicos.empresa_id', '=', $empresa_id)
             ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
             ->get($fieldReturn);
 

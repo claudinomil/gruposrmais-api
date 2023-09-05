@@ -13,8 +13,8 @@ class Cliente extends Model
     protected $table = 'clientes';
 
     protected $fillable = [
+        'empresa_id',
         'principal_cliente_id',
-        'responsavel_funcionario_id',
         'status',
         'tipo',
         'name',
@@ -52,7 +52,6 @@ class Cliente extends Model
         'telefone_2',
         'celular_1',
         'celular_2',
-        'foto',
         'numero_pavimentos',
         'altura',
         'area_total_construida',
@@ -86,7 +85,6 @@ class Cliente extends Model
     public function setUfCobrancaAttribute($value) {$this->attributes['uf_cobranca'] = mb_strtoupper($value);}
     public function setEmailAttribute($value) {$this->attributes['email'] = mb_strtolower($value);}
     public function setSiteAttribute($value) {$this->attributes['site'] = mb_strtolower($value);}
-    public function setFotoAttribute($value) {$this->attributes['foto'] = mb_strtolower($value);}
 
     public function setIdentidadeDataEmissaoAttribute($value) {if ($value != '') {$this->attributes['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
     public function setDataNascimentoAttribute($value) {if ($value != '') {$this->attributes['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}

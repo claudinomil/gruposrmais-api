@@ -14,10 +14,8 @@ class VisitaTecnica extends Model
     protected $table = 'visitas_tecnicas';
 
     protected $fillable = [
-        'data_visita',
-        'visita_tecnica_status_id',
-        'cliente_id',
-        'responsavel_funcionario_id',
+        'empresa_id',
+        'cliente_servico_id',
         'numero_pavimentos',
         'altura',
         'area_total_construida',
@@ -40,12 +38,47 @@ class VisitaTecnica extends Model
         'certificado_aprovacao_simplificado',
         'certificado_aprovacao_simplificado_numero',
         'certificado_aprovacao_assistido',
-        'certificado_aprovacao_assistido_numero'
+        'certificado_aprovacao_assistido_numero',
+        'executado_data',
+        'executado_user_id'
     ];
 
-    protected $dates = [
-        'data_visita'
-    ];
+    protected function setLaudoExigenciasDataEmissaoAttribute($value) {
+        if ($value != '') {
+            $this->attributes['laudo_exigencias_data_emissao'] = \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        } else {
+            $this->attributes['laudo_exigencias_data_emissao'] = null;
+        }
+    }
+    protected function getLaudoExigenciasDataEmissaoAttribute($value) {
+        if ($value !== null) {
+            return \Illuminate\Support\Carbon::parse($value)->format('d/m/Y');
+        }
+    }
 
-    public function setDataVisitaAttribute($value) {if ($value != '') {$this->attributes['data_visita'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
+    protected function setLaudoExigenciasDataVencimentoAttribute($value) {
+        if ($value != '') {
+            $this->attributes['laudo_exigencias_data_vencimento'] = \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        } else {
+            $this->attributes['laudo_exigencias_data_vencimento'] = null;
+        }
+    }
+    protected function getLaudoExigenciasDataVencimentoAttribute($value) {
+        if ($value !== null) {
+            return \Illuminate\Support\Carbon::parse($value)->format('d/m/Y');
+        }
+    }
+
+    protected function setExecutadoDataAttribute($value) {
+        if ($value != '') {
+            $this->attributes['executado_data'] = \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        } else {
+            $this->attributes['executado_data'] = null;
+        }
+    }
+    protected function getExecutadoDataAttribute($value) {
+        if ($value !== null) {
+            return \Illuminate\Support\Carbon::parse($value)->format('d/m/Y');
+        }
+    }
 }

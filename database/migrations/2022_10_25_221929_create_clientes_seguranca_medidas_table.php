@@ -13,6 +13,9 @@ class CreateClientesSegurancaMedidasTable extends Migration
             $table->integer('pavimento');
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->foreignId('seguranca_medida_id')->constrained('seguranca_medidas');
+            $table->integer('quantidade')->nullable();
+            $table->string('tipo')->nullable();
+            $table->text('observacao')->nullable();
             $table->timestamps();
         });
     }

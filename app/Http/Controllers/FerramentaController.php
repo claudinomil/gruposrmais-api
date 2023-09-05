@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\FerramentaStoreRequest;
 use App\Http\Requests\FerramentaUpdateRequest;
 use Illuminate\Http\Request;
@@ -20,11 +21,12 @@ class FerramentaController extends Controller
         $this->tool = $tool;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         $registros = DB::table('ferramentas')
             ->join('users', 'ferramentas.user_id', '=', 'users.id')
             ->select(['ferramentas.*', 'users.name as userName'])
+            ->where('ferramentas.empresa_id', $empresa_id)
             ->where('ferramentas.user_id', Auth::user()->id)
             ->get();
 
@@ -57,9 +59,15 @@ class FerramentaController extends Controller
         }
     }
 
-    public function store(FerramentaStoreRequest $request)
+    public function store(FerramentaStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $this->tool->create($request->all());
 
@@ -73,7 +81,7 @@ class FerramentaController extends Controller
         }
     }
 
-    public function update(FerramentaUpdateRequest $request, $id)
+    public function update(FerramentaUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->tool->find($id);
@@ -81,6 +89,9 @@ class FerramentaController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, '', $registro), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
@@ -95,7 +106,7 @@ class FerramentaController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->tool->find($id);
@@ -103,6 +114,9 @@ class FerramentaController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -121,16 +135,16 @@ class FerramentaController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
-        $registros = $this->tool->where($field, 'like', '%' . $value . '%')->where('user_id', Auth::user()->id)->get();
+        $registros = $this->tool->where('ferramentas.empresa_id', '=', $empresa_id)->where($field, 'like', '%' . $value . '%')->where('user_id', Auth::user()->id)->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
-        $registros = $this->tool->where($fieldSearch, 'like', '%' . $fieldValue . '%')->where('user_id', Auth::user()->id)->get($fieldReturn);
+        $registros = $this->tool->where('ferramentas.empresa_id', '=', $empresa_id)->where($fieldSearch, 'like', '%' . $fieldValue . '%')->where('user_id', Auth::user()->id)->get($fieldReturn);
 
         return response()->json(ApiReturn::data('', 2000, '', $registros), 200);
     }

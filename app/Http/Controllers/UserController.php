@@ -3,25 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Models\Empresa;
 use App\Models\Funcionario;
 use App\Models\Grupo;
+use App\Models\LayoutMode;
+use App\Models\LayoutStyle;
 use App\Models\Modulo;
-use App\Models\Notificacao;
 use App\Models\SistemaAcesso;
 use App\Models\Situacao;
 use App\Models\Submodulo;
-use App\Models\Ferramenta;
+use App\Models\UserConfiguracao;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Session;
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
@@ -32,7 +33,7 @@ class UserController extends Controller
         $this->user = $user;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         $registros = $this->user->get();
 
@@ -47,6 +48,12 @@ class UserController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, []), 404);
             } else {
+                //buscar dados na tabela users_configuracoes
+                $registro['users_configuracoes'] = UserConfiguracao::where('user_id', '=', $id)->get();
+
+                //Verificar qtd de operações do usuário (para verificar se pode alterar alguns campos)
+                $registro['user_operacoes_qtd'] = SuporteFacade::verificarRelacionamento('transacoes', 'user_id', $id);
+
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
@@ -58,13 +65,19 @@ class UserController extends Controller
         }
     }
 
-    public function auxiliary()
+    public function auxiliary($empresa_id)
     {
         try {
             $registros = array();
 
+            //Empresas
+            $registros['empresas'] = Empresa::all();
+
+            //User Configurações
+            $registros['users_configuracoes'] = UserConfiguracao::where('empresa_id', '=', $empresa_id)->get();
+
             //Grupos
-            $registros['grupos'] = Grupo::all();
+            $registros['grupos'] = Grupo::where('empresa_id', '=', $empresa_id)->get();
 
             //Situações
             $registros['situacoes'] = Situacao::all();
@@ -85,22 +98,32 @@ class UserController extends Controller
         }
     }
 
-    public function store(UserStoreRequest $request)
+    public function store(UserStoreRequest $request, $empresa_id)
     {
         try {
-            //Preparando request
-            $data = $request->all();
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
 
             //Campo avatar
-            $data['avatar'] = 'build/assets/images/users/avatar-0.png';
+            $request['avatar'] = 'build/assets/images/users/avatar-0.png';
 
             //grava uma senha provisoria (usuário tem que redefinir)
-            $data['password'] = Hash::make('12345678');
+            $password = Str::password(10, true, true, false, false);
+            $request['password'] = Hash::make($password);
 
             //Incluindo registro
-            $this->user->create($data);
+            $registro = $this->user->create($request->all());
 
-            return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
+            //Editar dados na tabela users_configuracoes
+            SuporteFacade::editUserConfiguracoes($registro['id'], $request);
+
+            //Enviar $password (Disfarçada) para Client enviar E-mail do Primeiro Acesso
+            $password = 'a2@-'.$password.'-_3l';
+
+            return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, $password), 201);
         } catch (\Exception $e) {
             if (config('app.debug')) {
                 return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
@@ -110,7 +133,7 @@ class UserController extends Controller
         }
     }
 
-    public function update(UserUpdateRequest $request, $id)
+    public function update(UserUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->user->find($id);
@@ -118,12 +141,16 @@ class UserController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
-                //Preparando request
-                $data = $request->all();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
                 //Alterando registro
-                $registro->update($data);
+                $registro->update($request->all());
 
+                //Editar dados na tabela users_configuracoes
+                SuporteFacade::editUserConfiguracoes($id, $request);
+
+                //retorno
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
@@ -142,9 +169,10 @@ class UserController extends Controller
 
             //User
             $user = DB::table('users')
-                ->leftJoin('grupos', 'grupos.id', '=', 'users.grupo_id')
-                ->leftJoin('situacoes', 'situacoes.id', '=', 'users.situacao_id')
-                ->select(['users.*', 'grupos.name as groupName', 'situacoes.name as situacaoName'])
+                ->leftJoin('users_configuracoes', 'users_configuracoes.user_id', '=', 'users.id')
+                ->leftJoin('grupos', 'grupos.id', '=', 'users_configuracoes.grupo_id')
+                ->leftJoin('situacoes', 'situacoes.id', '=', 'users_configuracoes.situacao_id')
+                ->select(['users.*', 'grupos.name as grupoName', 'situacoes.name as situacaoName'])
                 ->where('users.id', '=', $id)
                 ->get();
 
@@ -258,19 +286,13 @@ class UserController extends Controller
         }
     }
 
-    public function editmodestyle(Request $request, $id)
+    public function editmodestyle(Request $request, $id, $empresa_id)
     {
         try {
-            $registro = $this->user->find($id);
+            //Alterando registro
+            UserConfiguracao::where('user_id', $id)->where('empresa_id', $empresa_id)->update($request->all());
 
-            if (!$registro) {
-                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
-            } else {
-                //Alterando registro
-                $registro->update($request->all());
-
-                return response()->json(ApiReturn::data('Modo/Style atualizado com sucesso.', 2000, null, null), 200);
-            }
+            return response()->json(ApiReturn::data('Modo/Style atualizado com sucesso.', 2000, null, null), 200);
         } catch (\Exception $e) {
             if (config('app.debug')) {
                 return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
@@ -280,7 +302,7 @@ class UserController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->user->find($id);
@@ -288,16 +310,35 @@ class UserController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Transações
-                $qtd = DB::table('transacoes')->where('user_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Transações.', 2040, null, null), 200);
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela visitas_tecnicas
+                if (SuporteFacade::verificarRelacionamento('visitas_tecnicas', 'executado_user_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Visitas Técnicas.', 2040, null, null), 200);
+                }
+
+                //Tabela transacoes
+                if (SuporteFacade::verificarRelacionamento('transacoes', 'user_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir.<br>Registro relacionado com Transações.', 2040, null, null), 200);
+                }
+
+                //Tabela notificacoes
+                if (SuporteFacade::verificarRelacionamento('notificacoes', 'user_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Notificações.', 2040, null, null), 200);
+                }
+
+                //Tabela ferramentas
+                if (SuporteFacade::verificarRelacionamento('ferramentas', 'user_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Ferramentas.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Apagarr dados na tabela users_configuracoes
+                UserConfiguracao::where('user_id', '=', $id)->delete();
+
                 $registro->delete();
 
                 return response()->json(ApiReturn::data('Registro excluído com sucesso.', 2000, null, null), 200);
@@ -312,31 +353,41 @@ class UserController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
         $registros = $this->user->where($field, 'like', '%' . $value . '%')->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
         $registros = $this->user->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
 
         return response()->json(ApiReturn::data('', 2000, '', $registros), 200);
     }
 
-    public function userPermissoesSettings($searchSubmodulo)
+    public function userPermissoesSettings($searchSubmodulo, $empresa_id)
     {
         try {
             if (!Auth::check()) {
                 return response()->json(ApiReturn::data('Usuário não está logado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Cria array
                 $registros = array();
 
                 //Dados Usuário Logado
                 $registros['userData'] = Auth::user();
+
+                //Empresas Usuário Logado
+                $registros['userEmpresas'] = UserConfiguracao
+                    ::join('empresas', 'users_configuracoes.empresa_id', 'empresas.id')
+                    ->select('empresas.*')
+                    ->where('users_configuracoes.user_id', Auth::user()->id)
+                    ->get();
 
                 //Permissões Usuário Logado
                 $registros['userPermissoes'] = DB::table('grupos_permissoes')
@@ -351,6 +402,12 @@ class UserController extends Controller
 
                 //Menu Submódulos
                 $registros['menuSubmodulos'] = Submodulo::where('viewing_order', '>', '0')->orderBy('viewing_order', 'asc')->orderBy('name', 'asc')->get();
+
+                //Layouts Modes
+                $registros['layouts_modes'] = LayoutMode::all();
+
+                //Layouts Styles
+                $registros['layouts_styles'] = LayoutStyle::all();
 
                 //Ferramentas
                 $registros['ferramentas'] = DB::table('ferramentas')
@@ -407,7 +464,7 @@ class UserController extends Controller
         }
     }
 
-    public function userLoggedData()
+    public function userLoggedData($empresa_id)
     {
         try {
             if (!Auth::check()) {
@@ -415,6 +472,9 @@ class UserController extends Controller
             } else {
                 //Cria array
                 $registro = array();
+
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
                 //Dados Usuário Logado
                 $registro['userData'] = Auth::user();

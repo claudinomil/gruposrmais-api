@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 class VisitaTecnicaSegurancaMedida extends Model
 {
@@ -18,6 +17,9 @@ class VisitaTecnicaSegurancaMedida extends Model
         'seguranca_medida_id',
         'seguranca_medida_nome',
         'seguranca_medida_quantidade',
-        'seguranca_medida_observacoes'
+        'seguranca_medida_tipo',
+        'seguranca_medida_observacao',
+        'conferencia',
+        'observacao'
     ];
 }

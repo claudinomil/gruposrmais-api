@@ -10,6 +10,7 @@ class CreatePropostasTable extends Migration
     {
         Schema::create('propostas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->foreignId('cliente_id')->constrained('clientes');
             $table->date('data_proposta')->nullable();
             $table->string('data_proposta_extenso')->nullable();

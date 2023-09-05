@@ -4,16 +4,14 @@ namespace Database\Seeders;
 
 use App\Models\ServicoTipo;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ServicoTiposSeeder extends Seeder
 {
     public function run()
     {
         //criando
-        ServicoTipo::create(['name' => 'MANUTENÇÃO']);
-        ServicoTipo::create(['name' => 'INSTALAÇÃO']);
-        ServicoTipo::create(['name' => 'BRIGADA']);
-        ServicoTipo::create(['name' => 'VENDA']);
+        ServicoTipo::create(['id' => 1, 'name' => 'BRIGADA DE INCÊNDIO']);
+        ServicoTipo::create(['id' => 2, 'name' => 'MANUTENÇÃO']);
+        ServicoTipo::create(['id' => 3, 'name' => 'VISITA TÉCNICA']);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\EstadoCivilStoreRequest;
 use App\Http\Requests\EstadoCivilUpdateRequest;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +18,7 @@ class EstadoCivilController extends Controller
         $this->estadoCivil = $estadoCivil;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         $registros = $this->estadoCivil->get();
 
@@ -43,9 +44,15 @@ class EstadoCivilController extends Controller
         }
     }
 
-    public function store(EstadoCivilStoreRequest $request)
+    public function store(EstadoCivilStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $this->estadoCivil->create($request->all());
 
@@ -59,7 +66,7 @@ class EstadoCivilController extends Controller
         }
     }
 
-    public function update(EstadoCivilUpdateRequest $request, $id)
+    public function update(EstadoCivilUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->estadoCivil->find($id);
@@ -67,6 +74,9 @@ class EstadoCivilController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
@@ -81,7 +91,7 @@ class EstadoCivilController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->estadoCivil->find($id);
@@ -89,12 +99,13 @@ class EstadoCivilController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
                 //Tabela funcionarios
-                $qtd = DB::table('funcionarios')->where('estado_civil_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Funcionários.', 2040, null, null), 200);
+                if (SuporteFacade::verificarRelacionamento('funcionarios', 'estado_civil_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -113,14 +124,14 @@ class EstadoCivilController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
         $registros = $this->estadoCivil->where($field, 'like', '%' . $value . '%')->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
         $registros = $this->estadoCivil->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
 

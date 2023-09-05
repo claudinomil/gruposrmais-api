@@ -10,7 +10,7 @@ class FerramentaObserver
     public function created(Ferramenta $tool)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'ferramentas', $tool, $tool);
+        Transacoes::transacaoRecord(1, 1, 'ferramentas', $tool, $tool);
     }
 
     public function updated(Ferramenta $tool)
@@ -19,13 +19,13 @@ class FerramentaObserver
         $beforeData = $tool->getOriginal();
         $laterData = $tool->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'ferramentas', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'ferramentas', $beforeData, $laterData);
     }
 
     public function deleted(Ferramenta $tool)
     {
         //gravar transacao
         Transacoes::
-        transacaoRecord(3, 'ferramentas', $tool, $tool);
+        transacaoRecord(1, 3, 'ferramentas', $tool, $tool);
     }
 }

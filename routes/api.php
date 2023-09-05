@@ -5,11 +5,8 @@ use Illuminate\Support\Facades\Route;
 //Auth
 require __DIR__.'/routes_auth.php';
 
-//Modulos
-require __DIR__.'/routes_modulos.php';
-
-//Submodulos
-require __DIR__.'/routes_submodulos.php';
+//Empresas
+require __DIR__.'/routes_empresas.php';
 
 //Ferramentas
 require __DIR__.'/routes_ferramentas.php';
@@ -68,14 +65,14 @@ require __DIR__.'/routes_estados.php';
 //Clientes
 require __DIR__.'/routes_clientes.php';
 
+//Clientes Servicos
+require __DIR__.'/routes_clientes_servicos.php';
+
 //Dashboards
 require __DIR__.'/routes_dashboards.php';
 
 //Fornecedores
 require __DIR__.'/routes_fornecedores.php';
-
-//Servicos Tipos
-require __DIR__.'/routes_servico_tipos.php';
 
 //Servicos
 require __DIR__.'/routes_servicos.php';
@@ -85,3 +82,12 @@ require __DIR__.'/routes_propostas.php';
 
 //Visitas Técnicas
 require __DIR__.'/routes_visitas_tecnicas.php';
+
+//Brigadas Incêndios
+require __DIR__.'/routes_brigadas.php';
+
+//Submodulos
+require __DIR__.'/routes_submodulos.php';
+
+//Qrcodes
+require __DIR__.'/routes_qrcodes.php';

@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('notificacoes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('empresa_id')->constrained('empresas');
             $table->date('date');
             $table->time('time');
             $table->string('title');

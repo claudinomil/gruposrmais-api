@@ -13,6 +13,7 @@ class Fornecedor extends Model
     protected $table = 'fornecedores';
 
     protected $fillable = [
+        'empresa_id',
         'status',
         'tipo',
         'name',
@@ -49,8 +50,7 @@ class Fornecedor extends Model
         'telefone_1',
         'telefone_2',
         'celular_1',
-        'celular_2',
-        'foto'
+        'celular_2'
     ];
 
     protected $dates = [
@@ -72,7 +72,6 @@ class Fornecedor extends Model
     public function setUfCobrancaAttribute($value) {$this->attributes['uf_cobranca'] = mb_strtoupper($value);}
     public function setEmailAttribute($value) {$this->attributes['email'] = mb_strtolower($value);}
     public function setSiteAttribute($value) {$this->attributes['site'] = mb_strtolower($value);}
-    public function setFotoAttribute($value) {$this->attributes['foto'] = mb_strtolower($value);}
 
     public function setIdentidadeDataEmissaoAttribute($value) {if ($value != '') {$this->attributes['identidade_data_emissao'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}
     public function setDataNascimentoAttribute($value) {if ($value != '') {$this->attributes['data_nascimento'] = Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');}}

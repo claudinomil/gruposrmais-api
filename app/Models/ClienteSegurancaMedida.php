@@ -15,6 +15,9 @@ class ClienteSegurancaMedida extends Model
     protected $fillable = [
         'pavimento',
         'cliente_id',
-        'seguranca_medida_id'
+        'seguranca_medida_id',
+        'quantidade',
+        'tipo',
+        'observacao'
     ];
 }

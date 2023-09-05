@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\ClienteStoreRequest;
 use App\Http\Requests\ClienteUpdateRequest;
 use App\Models\Banco;
 use App\Models\ClienteSegurancaMedida;
+use App\Models\ClienteServico;
 use App\Models\EdificacaoClassificacao;
-use App\Models\Funcionario;
 use App\Models\Genero;
 use App\Models\IdentidadeOrgao;
 use App\Models\Estado;
-use App\Models\IncendioRiscos;
+use App\Models\IncendioRisco;
 use App\Models\SegurancaMedida;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\Cliente;
 
 class ClienteController extends Controller
@@ -28,16 +26,16 @@ class ClienteController extends Controller
         $this->cliente = $cliente;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
-        $registros = DB::table('clientes')
+        $registros = $this->cliente
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
             ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
-            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'bancos.name as bancoName'])
+            ->where('clientes.empresa_id', $empresa_id)
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -65,7 +63,7 @@ class ClienteController extends Controller
         }
     }
 
-    public function auxiliary()
+    public function auxiliary($empresa_id)
     {
         try {
             $registros = array();
@@ -74,10 +72,7 @@ class ClienteController extends Controller
             $registros['generos'] = Genero::all();
 
             //Principal Clientes
-            $registros['principal_clientes'] = Cliente::all();
-
-            //Responsavel Funcionarios
-            $registros['responsavel_funcionarios'] = Funcionario::all();
+            $registros['principal_clientes'] = Cliente::where('empresa_id', '=', $empresa_id)->get();
 
             //Bancos
             $registros['bancos'] = Banco::all();
@@ -92,7 +87,7 @@ class ClienteController extends Controller
             $registros['edificacao_classificacoes'] = EdificacaoClassificacao::all();
 
             //Incêndio Riscos
-            $registros['incendio_riscos'] = IncendioRiscos::all();
+            $registros['incendio_riscos'] = IncendioRisco::all();
 
             //Segurança Medidas
             $registros['seguranca_medidas'] = SegurancaMedida::all();
@@ -107,31 +102,22 @@ class ClienteController extends Controller
         }
     }
 
-    public function store(ClienteStoreRequest $request)
+    public function store(ClienteStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $registro = $this->cliente->create($request->all());
 
-            //Gravar dados na tabela clientes_seguranca_medidas'''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            $cliente_id = $registro['id'];
-            $numero_pavimentos = $request['numero_pavimentos'];
-            $maior_id_tabela_seguranca_medidas = $request['maior_id_tabela_seguranca_medidas'];
+            //Editar dados na tabela clientes_seguranca_medidas
+            SuporteFacade::editClienteSegurancaMedida(1, $registro['id'], $request);
 
-            for($i=1; $i<=$numero_pavimentos; $i++) {
-                for ($m = 1; $m <= $maior_id_tabela_seguranca_medidas; $m++) {
-                    if (isset($request['seguranca_medida_' . $i . '_' . $m])) {
-                        $data = array();
-                        $data['pavimento'] = $i;
-                        $data['cliente_id'] = $cliente_id;
-                        $data['seguranca_medida_id'] = $m;
-
-                        ClienteSegurancaMedida::create($data);
-                    }
-                }
-            }
-            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
+            //Return
             return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
             if (config('app.debug')) {
@@ -142,7 +128,7 @@ class ClienteController extends Controller
         }
     }
 
-    public function update(ClienteUpdateRequest $request, $id)
+    public function update(ClienteUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->cliente->find($id);
@@ -150,31 +136,18 @@ class ClienteController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
-                //Apagarr dados na tabela clientes_seguranca_medidas''''''''''''''''''''''''''''''''''''''''''''''''''''
-                ClienteSegurancaMedida::where('cliente_id', '=', $id)->delete();
+                //Editar dados na tabela clientes_seguranca_medidas
+                SuporteFacade::editClienteSegurancaMedida(1, $id, $request);
+
+                //Atualizar Visitas Técnicas para esse Cliente''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                SuporteFacade::updateVisitaTecnicaCliente($id);
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-                //Gravar dados na tabela clientes_seguranca_medidas'''''''''''''''''''''''''''''''''''''''''''''''''''''
-                $cliente_id = $id;
-                $numero_pavimentos = $request['numero_pavimentos'];
-                $maior_id_tabela_seguranca_medidas = $request['maior_id_tabela_seguranca_medidas'];
-
-                for($i=1; $i<=$numero_pavimentos; $i++) {
-                    for ($m = 1; $m <= $maior_id_tabela_seguranca_medidas; $m++) {
-                        if (isset($request['seguranca_medida_' . $i . '_' . $m])) {
-                            $data = array();
-                            $data['pavimento'] = $i;
-                            $data['cliente_id'] = $cliente_id;
-                            $data['seguranca_medida_id'] = $m;
-
-                            ClienteSegurancaMedida::create($data);
-                        }
-                    }
-                }
-                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
             }
@@ -197,7 +170,7 @@ class ClienteController extends Controller
             } else {
                 //Buscando Risco Incendio
                 if (isset($registro['incendio_risco_id']) and $registro['incendio_risco_id'] != '') {
-                    $incendio_risco = IncendioRiscos::where('id', '=', $registro['incendio_risco_id'])->get('name');
+                    $incendio_risco = IncendioRisco::where('id', '=', $registro['incendio_risco_id'])->get('name');
                     $registro['incendio_risco'] = $incendio_risco[0]['name'];
                 } else {
                     $registro['incendio_risco'] = [];
@@ -220,8 +193,8 @@ class ClienteController extends Controller
                 }
 
                 //buscar dados das medidas de segurança
-                $cliente_seguranca_medidas = DB::table('clientes_seguranca_medidas')
-                    ->leftJoin('seguranca_medidas', 'clientes_seguranca_medidas.seguranca_medida_id', '=', 'seguranca_medidas.id')
+                $cliente_seguranca_medidas = ClienteSegurancaMedida
+                    ::leftJoin('seguranca_medidas', 'clientes_seguranca_medidas.seguranca_medida_id', '=', 'seguranca_medidas.id')
                     ->select(['clientes_seguranca_medidas.*', 'seguranca_medidas.name as seguranca_medida_nome'])
                     ->where('clientes_seguranca_medidas.cliente_id', '=', $id)
                     ->orderBy('clientes_seguranca_medidas.pavimento')
@@ -247,23 +220,22 @@ class ClienteController extends Controller
             $registro = array();
 
             //Cliente
-            $cliente = DB::table('clientes')
-                ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
-                ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
-                ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
-                ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
-                ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
-                ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-                ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
+            $cliente = Cliente::
+                leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
+                ->select(['clientes.*', 'principal_clientes.name as principalClienteName'])
                 ->where('clientes.id', '=', $id)
                 ->get();
 
             $registro['cliente'] = $cliente[0];
 
-            //Transacoes
-            $transacoes = ['Transação 1', 'Transação 2', 'Transação 3'];
+            //Serviços do Cliente
+            $cliente_servicos = ClienteServico::
+                leftJoin('servicos', 'clientes_servicos.servico_id', '=', 'servicos.id')
+                ->select(['clientes_servicos.*', 'servicos.name as servicoName'])
+                ->where('clientes_servicos.cliente_id', '=', $id)
+                ->get();
 
-            $registro['transacoesTable']['transacoes'] = $transacoes;
+            $registro['cliente_servicos'] = $cliente_servicos;
 
             return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
         } catch (\Exception $e) {
@@ -275,29 +247,7 @@ class ClienteController extends Controller
         }
     }
 
-    public function updateFoto(Request $request, $id)
-    {
-        try {
-            $registro = $this->cliente->find($id);
-
-            if (!$registro) {
-                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
-            } else {
-                //Alterando registro
-                $registro->update($request->all());
-
-                return response()->json(ApiReturn::data('Foto atualizada com sucesso.', 2000, null, $registro), 200);
-            }
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->cliente->find($id);
@@ -305,39 +255,30 @@ class ClienteController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Propostas
-                $qtd = DB::table('propostas')->where('cliente_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela clientes
+                if (SuporteFacade::verificarRelacionamento('clientes', 'principal_cliente_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                }
+
+                //Tabela propostas
+                if (SuporteFacade::verificarRelacionamento('propostas', 'cliente_id', $id) > 0) {
                     return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Propostas.', 2040, null, null), 200);
                 }
 
-                //Tabela Clientes
-                $qtd = DB::table('clientes')->where('principal_cliente_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
-                }
-
-                //Tabela Visitas Técnicas
-                $qtd = DB::table('visitas_tecnicas')->where('cliente_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Visitas Técnicas.', 2040, null, null), 200);
-                }
-
-                //Tabela clientes_seguranca_medidas
-                $qtd = DB::table('clientes_seguranca_medidas')->where('cliente_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                //Tabela clientes_servicos
+                if (SuporteFacade::verificarRelacionamento('clientes_servicos', 'cliente_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes Serviços.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
                 //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Apagarr dados na tabela clientes_seguranca_medidas
-                ClienteSegurancaMedida::where('cliente_id', '=', $id)->delete();
+
+                //Editar dados na tabela clientes_seguranca_medidas
+                SuporteFacade::editClienteSegurancaMedida(3, $id, '');
 
                 $registro->delete();
 
@@ -353,32 +294,32 @@ class ClienteController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
-        $registros = DB::table('clientes')
+        $registros = $this->cliente
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
             ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
-            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'bancos.name as bancoName'])
+            ->where('clientes.empresa_id', '=', $empresa_id)
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
-        $registros = DB::table('clientes')
+        $registros = $this->cliente
             ->leftJoin('identidade_orgaos', 'clientes.identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'clientes.identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'clientes.genero_id', '=', 'generos.id')
             ->leftJoin('clientes as principal_clientes', 'clientes.principal_cliente_id', '=', 'principal_clientes.id')
-            ->leftJoin('funcionarios as responsavel_funcionarios', 'clientes.responsavel_funcionario_id', '=', 'responsavel_funcionarios.id')
             ->leftJoin('bancos', 'clientes.banco_id', '=', 'bancos.id')
-            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'responsavel_funcionarios.name as responsavelFuncionarioName', 'bancos.name as bancoName'])
+            ->select(['clientes.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'principal_clientes.name as principalClienteName', 'bancos.name as bancoName'])
+            ->where('clientes.empresa_id', $empresa_id)
             ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
             ->get($fieldReturn);
 

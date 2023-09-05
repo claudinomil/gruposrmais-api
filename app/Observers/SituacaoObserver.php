@@ -10,7 +10,7 @@ class SituacaoObserver
     public function created(Situacao $situacao)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'situacoes', $situacao, $situacao);
+        Transacoes::transacaoRecord(1, 1, 'situacoes', $situacao, $situacao);
     }
 
     public function updated(Situacao $situacao)
@@ -19,13 +19,13 @@ class SituacaoObserver
         $beforeData = $situacao->getOriginal();
         $laterData = $situacao->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'situacoes', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'situacoes', $beforeData, $laterData);
     }
 
     public function deleted(Situacao $situacao)
     {
         //gravar transacao
         Transacoes::
-        transacaoRecord(3, 'situacoes', $situacao, $situacao);
+        transacaoRecord(1, 3, 'situacoes', $situacao, $situacao);
     }
 }

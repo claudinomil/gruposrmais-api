@@ -10,7 +10,7 @@ class GeneroObserver
     public function created(Genero $genero)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(1, 'generos', $genero, $genero);
+        Transacoes::transacaoRecord(1, 1, 'generos', $genero, $genero);
     }
 
     public function updated(Genero $genero)
@@ -19,12 +19,12 @@ class GeneroObserver
         $beforeData = $genero->getOriginal();
         $laterData = $genero->getAttributes();
 
-        Transacoes::transacaoRecord(2, 'generos', $beforeData, $laterData);
+        Transacoes::transacaoRecord(1, 2, 'generos', $beforeData, $laterData);
     }
 
     public function deleted(Genero $genero)
     {
         //gravar transacao
-        Transacoes::transacaoRecord(3, 'generos', $genero, $genero);
+        Transacoes::transacaoRecord(1, 3, 'generos', $genero, $genero);
     }
 }

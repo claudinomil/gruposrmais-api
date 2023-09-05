@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\GeneroStoreRequest;
 use App\Http\Requests\GeneroUpdateRequest;
 use App\Models\Genero;
@@ -17,7 +18,7 @@ class GeneroController extends Controller
         $this->genero = $genero;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         $registros = $this->genero->all();
 
@@ -43,9 +44,15 @@ class GeneroController extends Controller
         }
     }
 
-    public function store(GeneroStoreRequest $request)
+    public function store(GeneroStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $this->genero->create($request->all());
 
@@ -59,7 +66,7 @@ class GeneroController extends Controller
         }
     }
 
-    public function update(GeneroUpdateRequest $request, $id)
+    public function update(GeneroUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->genero->find($id);
@@ -67,6 +74,9 @@ class GeneroController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
@@ -81,7 +91,7 @@ class GeneroController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->genero->find($id);
@@ -89,26 +99,23 @@ class GeneroController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Fornecedores
-                $qtd = DB::table('fornecedores')->where('genero_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Fornecedores.', 2040, null, null), 200);
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela clientes
+                if (SuporteFacade::verificarRelacionamento('clientes', 'genero_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
                 }
 
-                //Tabela Funcionários
-                $qtd = DB::table('funcionarios')->where('genero_id', $id)->count();
-
-                if ($qtd > 0) {
+                //Tabela funcionarios
+                if (SuporteFacade::verificarRelacionamento('funcionarios', 'genero_id', $id) > 0) {
                     return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
                 }
 
-                //Tabela Clientes
-                $qtd = DB::table('clientes')->where('genero_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
+                //Tabela fornecedores
+                if (SuporteFacade::verificarRelacionamento('fornecedores', 'genero_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Fornecedores.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -127,14 +134,14 @@ class GeneroController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
         $registros = $this->genero->where($field, 'like', '%'.$value.'%')->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
         $registros = $this->genero->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
 

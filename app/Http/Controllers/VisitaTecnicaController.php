@@ -3,14 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
-use App\Http\Requests\VisitaTecnicaStoreRequest;
-use App\Http\Requests\VisitaTecnicaUpdateRequest;
-use App\Models\Funcionario;
+use App\Facades\SuporteFacade;
+use App\Facades\Transacoes;
+use App\Models\ClienteServico;
+use App\Models\User;
 use App\Models\VisitaTecnicaSegurancaMedida;
-use App\Models\VisitaTecnicaStatus;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\VisitaTecnica;
-use App\Models\Cliente;
+use Illuminate\Http\Request;
 
 class VisitaTecnicaController extends Controller
 {
@@ -21,13 +22,26 @@ class VisitaTecnicaController extends Controller
         $this->visita_tecnica = $visita_tecnica;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
-        $registros = DB::table('visitas_tecnicas')
-            ->leftJoin('visita_tecnica_status', 'visitas_tecnicas.visita_tecnica_status_id', '=', 'visita_tecnica_status.id')
-            ->leftJoin('clientes', 'visitas_tecnicas.cliente_id', '=', 'clientes.id')
-            ->leftJoin('funcionarios', 'visitas_tecnicas.responsavel_funcionario_id', '=', 'funcionarios.id')
-            ->select(['visitas_tecnicas.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'visita_tecnica_status.name as visitaTecnicaStatusName'])
+        //Registros para Grade
+        $registros = $this->visita_tecnica
+            ::Join('clientes_servicos', 'clientes_servicos.id', '=', 'visitas_tecnicas.cliente_servico_id')
+            ->leftJoin('servicos', 'clientes_servicos.servico_id', '=', 'servicos.id')
+            ->leftJoin('clientes', 'clientes_servicos.cliente_id', '=', 'clientes.id')
+            ->leftJoin('servico_status', 'clientes_servicos.servico_status_id', '=', 'servico_status.id')
+            ->leftJoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', '=', 'funcionarios.id')
+            ->select([
+                'visitas_tecnicas.*'
+                , DB::raw('DATE_FORMAT(clientes_servicos.data_inicio, "%d/%m/%Y") as data_inicio')
+                , 'clientes_servicos.servico_status_id'
+                , 'servicos.name as servicoName'
+                , 'clientes.name as clienteName'
+                , 'servico_status.name as servicoStatusName'
+                , 'funcionarios.name as funcionarioName'
+            ])
+            ->where('visitas_tecnicas.empresa_id', $empresa_id)
+            ->where('servicos.servico_tipo_id', '=', 3)
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
@@ -36,13 +50,37 @@ class VisitaTecnicaController extends Controller
     public function show($id)
     {
         try {
-            $registro = $this->visita_tecnica->find($id);
+            //Buscar Registro
+            $registro = $this->visita_tecnica
+                ->leftjoin('users', 'users.id', 'visitas_tecnicas.executado_user_id')
+                ->leftjoin('funcionarios', 'funcionarios.id', 'users.funcionario_id')
+                ->select('visitas_tecnicas.*', 'funcionarios.name as executado_user_funcionario')
+                ->where('visitas_tecnicas.id', $id)
+                ->get()[0];
 
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //buscar dados da tabela clientes_servicos
+                $registro['clientes_servicos_servico'] = ClienteServico
+                    ::leftjoin('clientes', 'clientes_servicos.cliente_id', 'clientes.id')
+                    ->leftjoin('servico_status', 'clientes_servicos.servico_status_id', 'servico_status.id')
+                    ->leftjoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', 'funcionarios.id')
+                    ->select('clientes_servicos.*', 'clientes.name as clienteName', 'servico_status.name as servicoStatusName', 'funcionarios.name as responsavelFuncionarioName')
+                    ->where('clientes_servicos.id', '=', $registro['cliente_servico_id'])
+                    ->get()[0];
+
                 //buscar dados das medidas de segurança
                 $registro['cliente_seguranca_medidas'] = VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->get();
+
+                //Dados para Finalizar Serviço
+                $registro['dados_servico_executado'] = User
+                    ::leftjoin('funcionarios', 'funcionarios.id', 'users.funcionario_id')
+                    ->select('users.id as executado_user_id', 'funcionarios.name as executado_user_funcionario')
+                    ->where('users.id', Auth::user()->id)
+                    ->get()[0];
+
+                $registro['dados_servico_executado']['executado_data'] = date('d/m/Y');
 
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
@@ -55,19 +93,10 @@ class VisitaTecnicaController extends Controller
         }
     }
 
-    public function auxiliary()
+    public function auxiliary($empresa_id)
     {
         try {
             $registros = array();
-
-            //Visita Tecnica  Status
-            $registros['visita_tecnica_status'] = VisitaTecnicaStatus::all();
-
-            //Clientes
-            $registros['clientes'] = Cliente::all();
-
-            //Funcionarios
-            $registros['funcionarios'] = Funcionario::all();
 
             return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registros), 200);
         } catch (\Exception $e) {
@@ -79,43 +108,7 @@ class VisitaTecnicaController extends Controller
         }
     }
 
-    public function store(VisitaTecnicaStoreRequest $request)
-    {
-        try {
-            //Incluindo registro
-            $registro = $this->visita_tecnica->create($request->all());
-
-            //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
-            $visita_tecnica_id = $registro['id'];
-            $numero_pavimentos = $request['numero_pavimentos'];
-            $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
-
-            for ($i = 1; $i <= $numero_pavimentos; $i++) {
-                foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
-                    if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
-                        $data = array();
-                        $data['pavimento'] = $i;
-                        $data['visita_tecnica_id'] = $visita_tecnica_id;
-                        $data['seguranca_medida_id'] = $seguranca_medida_id;
-                        $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
-
-                        VisitaTecnicaSegurancaMedida::create($data);
-                    }
-                }
-            }
-            //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-            return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function update(VisitaTecnicaUpdateRequest $request, $id)
+    public function update(Request $request, $id, $empresa_id)
     {
         try {
             $registro = $this->visita_tecnica->find($id);
@@ -123,31 +116,59 @@ class VisitaTecnicaController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
-                //Apagarr dados na tabela visitas_tecnicas_seguranca_medidas'''''''''''
-                VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->delete();
-                //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
                 //Gravar dados na tabela visitas_tecnicas_seguranca_medidas''''''''''''
-                $visita_tecnica_id = $id;
                 $numero_pavimentos = $request['numero_pavimentos'];
                 $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
 
                 for($i=1; $i<=$numero_pavimentos; $i++) {
                     foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
                         if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
-                            $data = array();
-                            $data['pavimento'] = $i;
-                            $data['visita_tecnica_id'] = $visita_tecnica_id;
-                            $data['seguranca_medida_id'] = $seguranca_medida_id;
-                            $data['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
-                            $data['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
-                            $data['seguranca_medida_observacoes'] = $request['seguranca_medida_observacoes_' . $i . '_' . $seguranca_medida_id];
+                            //Dados Atual
+                            $dadosAtual = array();
+                            $dadosAtual['visita_tecnica_id'] = $id;
+                            $dadosAtual['pavimento'] = $i;
+                            $dadosAtual['seguranca_medida_id'] = $seguranca_medida_id;
+                            $dadosAtual['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['seguranca_medida_tipo'] = $request['seguranca_medida_tipo_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['seguranca_medida_observacao'] = $request['seguranca_medida_observacao_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['conferencia'] = $request['conferencia_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['observacao'] = $request['observacao_' . $i . '_' . $seguranca_medida_id];
 
-                            VisitaTecnicaSegurancaMedida::create($data);
+                            $visita_tecnica_seguranca_medida = VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', $id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->get();
+
+                            if ($visita_tecnica_seguranca_medida->count() == 1) {
+                                VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', $id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->update($dadosAtual);
+
+                                //gravar transacao
+                                Transacoes::transacaoRecord(2, 2, 'visitas_tecnicas', $visita_tecnica_seguranca_medida[0], $dadosAtual);
+                            } else {
+                                VisitaTecnicaSegurancaMedida::create($dadosAtual);
+
+                                //gravar transacao
+                                Transacoes::transacaoRecord(2, 1, 'visitas_tecnicas', $dadosAtual, $dadosAtual);
+                            }
                         }
+                    }
+                }
+                //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+                //Alterar dados na tabela clientes_servicos''''''''''''''''''''''''''''
+                if ($request->has('executado_user_id')) {
+                    $dataUpdate = array();
+                    $dataUpdate['servico_status_id'] = 1;
+                    $dataUpdate['responsavel_funcionario_id'] = $request['executado_user_id'];
+
+                    $registroUpdate = ClienteServico::find($registro['cliente_servico_id']);
+
+                    if ($registroUpdate) {
+                        $registroUpdate->update($dataUpdate);
                     }
                 }
                 //'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -163,90 +184,30 @@ class VisitaTecnicaController extends Controller
         }
     }
 
-    public function extraData($id)
+    public function search($field, $value, $empresa_id)
     {
-        try {
-            $registro = array();
-
-            //VisitaTecnica
-            $visita_tecnica = DB::table('visitas_tecnicas')
-                ->leftJoin('visita_tecnica_status', 'visitas_tecnicas.visita_tecnica_status_id', '=', 'visita_tecnica_status.id')
-                ->leftJoin('clientes', 'visitas_tecnicas.cliente_id', '=', 'clientes.id')
-                ->leftJoin('funcionarios', 'visitas_tecnicas.responsavel_funcionario_id', '=', 'funcionarios.id')
-                ->select(['visitas_tecnicas.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'visita_tecnica_status.name as visitaTecnicaStatusName'])
-                ->where('visitas_tecnicas.id', '=', $id)
-                ->get();
-
-            $registro['visita_tecnica'] = $visita_tecnica[0];
-
-            //Transacoes
-            $transacoes = ['Transação 1', 'Transação 2', 'Transação 3'];
-
-            $registro['transacoesTable']['transacoes'] = $transacoes;
-
-            return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function destroy($id)
-    {
-        try {
-            $registro = $this->visita_tecnica->find($id);
-
-            if (!$registro) {
-                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
-            } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-                //Deletar'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Apagarr dados na tabela visitas_tecnicas_seguranca_medidas
-                VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', '=', $id)->delete();
-
-                $registro->delete();
-
-                return response()->json(ApiReturn::data('Registro excluído com sucesso.', 2000, null, null), 200);
-                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-            }
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function search($field, $value)
-    {
-        $registros = DB::table('visitas_tecnicas')
-            ->leftJoin('visita_tecnica_status', 'visitas_tecnicas.visita_tecnica_status_id', '=', 'visita_tecnica_status.id')
-            ->leftJoin('clientes', 'visitas_tecnicas.cliente_id', '=', 'clientes.id')
-            ->leftJoin('funcionarios', 'visitas_tecnicas.responsavel_funcionario_id', '=', 'funcionarios.id')
-            ->select(['visitas_tecnicas.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'visita_tecnica_status.name as visitaTecnicaStatusName'])
+        //Registros para Grade
+        $registros = $this->visita_tecnica
+            ::Join('clientes_servicos', 'clientes_servicos.id', '=', 'visitas_tecnicas.cliente_servico_id')
+            ->leftJoin('servicos', 'clientes_servicos.servico_id', '=', 'servicos.id')
+            ->leftJoin('clientes', 'clientes_servicos.cliente_id', '=', 'clientes.id')
+            ->leftJoin('servico_status', 'clientes_servicos.servico_status_id', '=', 'servico_status.id')
+            ->leftJoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', '=', 'funcionarios.id')
+            ->select([
+                'visitas_tecnicas.*'
+                , DB::raw('DATE_FORMAT(clientes_servicos.data_inicio, "%d/%m/%Y") as data_inicio')
+                , 'clientes_servicos.servico_status_id'
+                , 'servicos.name as servicoName'
+                , 'clientes.name as clienteName'
+                , 'servico_status.name as servicoStatusName'
+                , 'funcionarios.name as funcionarioName'
+            ])
+            ->where('visitas_tecnicas.empresa_id', $empresa_id)
+            ->where('servicos.servico_tipo_id', '=', 3)
             ->where($field, 'like', '%' . $value . '%')
             ->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
-    }
-
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
-    {
-        $registros = DB::table('visitas_tecnicas')
-            ->leftJoin('visita_tecnica_status', 'visitas_tecnicas.visita_tecnica_status_id', '=', 'visita_tecnica_status.id')
-            ->leftJoin('clientes', 'visitas_tecnicas.cliente_id', '=', 'clientes.id')
-            ->leftJoin('funcionarios', 'visitas_tecnicas.responsavel_funcionario_id', '=', 'funcionarios.id')
-            ->select(['visitas_tecnicas.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'visita_tecnica_status.name as visitaTecnicaStatusName'])
-            ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
-            ->get($fieldReturn);
-
-        return response()->json(ApiReturn::data('', 2000, null, $registros), 200);
     }
 
     public function medidas_seguranca(int $np, $atc, string $grupo, string $divisao)

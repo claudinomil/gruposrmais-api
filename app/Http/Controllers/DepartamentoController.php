@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\DepartamentoStoreRequest;
 use App\Http\Requests\DepartamentoUpdateRequest;
 use App\Models\Departamento;
@@ -17,9 +18,9 @@ class DepartamentoController extends Controller
         $this->departamento = $departamento;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
-        $registros = $this->departamento->get();
+        $registros = $this->departamento->where('departamentos.empresa_id', $empresa_id)->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
@@ -43,9 +44,15 @@ class DepartamentoController extends Controller
         }
     }
 
-    public function store(DepartamentoStoreRequest $request)
+    public function store(DepartamentoStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $this->departamento->create($request->all());
 
@@ -59,7 +66,7 @@ class DepartamentoController extends Controller
         }
     }
 
-    public function update(DepartamentoUpdateRequest $request, $id)
+    public function update(DepartamentoUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->departamento->find($id);
@@ -67,6 +74,9 @@ class DepartamentoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
@@ -81,7 +91,7 @@ class DepartamentoController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->departamento->find($id);
@@ -89,11 +99,12 @@ class DepartamentoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
-                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Funcionários
-                $qtd = DB::table('funcionarios')->where('departamento_id', $id)->count();
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
 
-                if ($qtd > 0) {
+                //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                //Tabela funcionarios
+                if (SuporteFacade::verificarRelacionamento('funcionarios', 'departamento_id', $id) > 0) {
                     return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -113,16 +124,16 @@ class DepartamentoController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
-        $registros = $this->departamento->where($field, 'like', '%'.$value.'%')->get();
+        $registros = $this->departamento->where('departamentos.empresa_id', '=', $empresa_id)->where($field, 'like', '%'.$value.'%')->get();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
-        $registros = $this->departamento->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
+        $registros = $this->departamento->where('departamentos.empresa_id', '=', $empresa_id)->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
 
         return response()->json(ApiReturn::data('', 2000, '', $registros), 200);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
+use App\Facades\SuporteFacade;
 use App\Http\Requests\IdentidadeOrgaoStoreRequest;
 use App\Http\Requests\IdentidadeOrgaoUpdateRequest;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class IdentidadeOrgaoController extends Controller
         $this->identidadeOrgao = $identidadeOrgao;
     }
 
-    public function index()
+    public function index($empresa_id)
     {
         $registros = $this->identidadeOrgao->get();
 
@@ -45,9 +46,15 @@ class IdentidadeOrgaoController extends Controller
         }
     }
 
-    public function store(IdentidadeOrgaoStoreRequest $request)
+    public function store(IdentidadeOrgaoStoreRequest $request, $empresa_id)
     {
         try {
+            //Atualisar objeto Auth::user()
+            SuporteFacade::setUserLogged($empresa_id);
+
+            //Colocar empresa_id no Request
+            $request['empresa_id'] = $empresa_id;
+
             //Incluindo registro
             $this->identidadeOrgao->create($request->all());
 
@@ -61,7 +68,7 @@ class IdentidadeOrgaoController extends Controller
         }
     }
 
-    public function update(IdentidadeOrgaoUpdateRequest $request, $id)
+    public function update(IdentidadeOrgaoUpdateRequest $request, $id, $empresa_id)
     {
         try {
             $registro = $this->identidadeOrgao->find($id);
@@ -69,6 +76,9 @@ class IdentidadeOrgaoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Alterando registro
                 $registro->update($request->all());
 
@@ -83,7 +93,7 @@ class IdentidadeOrgaoController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, $empresa_id)
     {
         try {
             $registro = $this->identidadeOrgao->find($id);
@@ -91,33 +101,28 @@ class IdentidadeOrgaoController extends Controller
             if (!$registro) {
                 return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, $registro), 404);
             } else {
+                //Atualisar objeto Auth::user()
+                SuporteFacade::setUserLogged($empresa_id);
+
                 //Verificar Relacionamentos'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-                //Tabela Fornecedores
-                $qtd = DB::table('fornecedores')->where('identidade_orgao_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Fornecedores.', 2040, null, null), 200);
+                //Tabela fornecedores
+                if (SuporteFacade::verificarRelacionamento('fornecedores', 'identidade_orgao_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Fornecedores.', 2040, null, null), 200);
                 }
 
-                //Tabela Clientes
-                $qtd = DB::table('clientes')->where('identidade_orgao_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Clientes.', 2040, null, null), 200);
+                //Tabela clientes
+                if (SuporteFacade::verificarRelacionamento('clientes', 'identidade_orgao_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Clientes.', 2040, null, null), 200);
                 }
 
-                //Tabela Funcionários
-                $qtd = DB::table('funcionarios')->where('personal_identidade_orgao_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Funcionários.', 2040, null, null), 200);
+                //Tabela funcionarios
+                if (SuporteFacade::verificarRelacionamento('funcionarios', 'personal_identidade_orgao_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
                 }
 
-                //Tabela Funcionários
-                $qtd = DB::table('funcionarios')->where('professional_identidade_orgao_id', $id)->count();
-
-                if ($qtd > 0) {
-                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado em Funcionários.', 2040, null, null), 200);
+                //Tabela funcionarios
+                if (SuporteFacade::verificarRelacionamento('funcionarios', 'professional_identidade_orgao_id', $id) > 0) {
+                    return response()->json(ApiReturn::data('Náo é possível excluir. Registro relacionado com Funcionários.', 2040, null, null), 200);
                 }
                 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -136,7 +141,7 @@ class IdentidadeOrgaoController extends Controller
         }
     }
 
-    public function search($field, $value)
+    public function search($field, $value, $empresa_id)
     {
         $registros = DB::table('identidade_orgaos')
             ->select(['identidade_orgaos.*'])
@@ -146,7 +151,7 @@ class IdentidadeOrgaoController extends Controller
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
     }
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn)
+    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
     {
         $registros = DB::table('identidade_orgaos')
             ->select(['identidade_orgaos.*'])

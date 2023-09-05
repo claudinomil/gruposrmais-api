@@ -13,6 +13,7 @@ class Proposta extends Model
     protected $table = 'propostas';
 
     protected $fillable = [
+        'empresa_id',
         'data_proposta',
         'data_proposta_extenso',
         'numero_proposta',
