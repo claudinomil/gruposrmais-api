@@ -490,7 +490,7 @@ class ClienteServicoController extends Controller
             ->leftJoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', '=', 'funcionarios.id')
             ->leftJoin('servicos', 'clientes_servicos.servico_id', '=', 'servicos.id')
             ->leftJoin('servico_status', 'clientes_servicos.servico_status_id', '=', 'servico_status.id')
-            ->select(['clientes_servicos.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'servicos.name as servicoName', 'servico_status.name as servicoStatusName'])
+            ->select(['clientes_servicos.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'servicos.servico_tipo_id', 'servicos.name as servicoName', 'servico_status.name as servicoStatusName'])
             ->where('servicos.empresa_id', $empresa_id)
             ->where($field, 'like', '%' . $value . '%')
             ->get();
