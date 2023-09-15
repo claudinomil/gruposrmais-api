@@ -10,8 +10,6 @@ Route::prefix('brigadas')->group(function () {
 
     //Escalas e Rondas
     Route::get('/escalas/{brigada_id}/{er_periodo_data_1}/{er_periodo_data_2}', [BrigadaController::class, 'escalas'])->middleware(['auth:api', 'scope:claudino']);
-    Route::put('/escalas_update_frequencia/{id}/{empresa_id}', [BrigadaController::class, 'escalas_update_frequencia'])->middleware(['auth:api', 'scope:claudino']);
 
     Route::get('/ronda_cliente_seguranca_medidas/{op}/{brigada_escala_id}/{brigada_ronda_id}', [BrigadaController::class, 'ronda_cliente_seguranca_medidas']);
-    Route::post('/ronda_store/{empresa_id}', [BrigadaController::class, 'ronda_store'])->middleware(['auth:api', 'scope:claudino']);
 });

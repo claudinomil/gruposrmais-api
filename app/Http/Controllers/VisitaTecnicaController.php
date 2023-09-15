@@ -138,7 +138,7 @@ class VisitaTecnicaController extends Controller
                             $dadosAtual['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
                             $dadosAtual['seguranca_medida_tipo'] = $request['seguranca_medida_tipo_' . $i . '_' . $seguranca_medida_id];
                             $dadosAtual['seguranca_medida_observacao'] = $request['seguranca_medida_observacao_' . $i . '_' . $seguranca_medida_id];
-                            $dadosAtual['conferencia'] = $request['conferencia_' . $i . '_' . $seguranca_medida_id];
+                            $dadosAtual['status'] = $request['status_' . $i . '_' . $seguranca_medida_id];
                             $dadosAtual['observacao'] = $request['observacao_' . $i . '_' . $seguranca_medida_id];
 
                             $visita_tecnica_seguranca_medida = VisitaTecnicaSegurancaMedida::where('visita_tecnica_id', $id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->get();

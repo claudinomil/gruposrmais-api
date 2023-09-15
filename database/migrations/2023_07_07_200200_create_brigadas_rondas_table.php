@@ -12,8 +12,12 @@ class CreateBrigadasRondasTable extends Migration
             $table->id();
 
             $table->foreignId('brigada_escala_id')->constrained('brigadas_escalas');
-            $table->date('data');
-            $table->time('hora');
+
+            $table->longText('foto')->nullable();
+            $table->date('data_inicio_ronda')->nullable();
+            $table->time('hora_inicio_ronda')->nullable();
+            $table->date('data_encerramento_ronda')->nullable();
+            $table->time('hora_encerramento_ronda')->nullable();
 
             $table->timestamps();
         });

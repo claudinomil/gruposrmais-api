@@ -90,6 +90,9 @@ class BrigadaController extends Controller
     public function escalas($brigada_id, $es_periodo_data_1, $es_periodo_data_2)
     {
         try {
+            //Rodar um Serviço para alterar escala_frequencia_id (ATRASO/FALTOU)
+            SuporteFacade::updateEscalaFrequenciaId();
+
             //Registros
             $registros = array();
 
@@ -106,45 +109,6 @@ class BrigadaController extends Controller
             $registros['rondas'] = BrigadaRonda::all();
 
             return response()->json(ApiReturn::data('Registros enviado com sucesso.', 2000, null, $registros), 200);
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function escalas_update_frequencia(Request $request, $id, $empresa_id)
-    {
-        try {
-            //Atualisar objeto Auth::user()
-            SuporteFacade::setUserLogged($empresa_id);
-
-            $registro = BrigadaEscala::find($id);
-
-            if (!$registro) {
-                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
-            } else {
-                //Dados Anterior
-                $dadosAnterior = BrigadaEscala::where('id', $id)->get()[0];
-
-                //Colocando valores no $request
-                $request['brigada_id'] = $dadosAnterior['brigada_id'];
-                $request['data_chegada_real'] = date('d/m/Y');
-                $request['hora_chegada_real'] = date('H:i:s');
-                $request['data_saida_real'] = date('d/m/Y');
-                $request['hora_saida_real'] = date('H:i:s');
-
-                //Alterando registro
-                $registro->update($request->all());
-
-                //gravar transacao
-                Transacoes::transacaoRecord(5, 2, 'brigadas', $dadosAnterior, $request);
-
-                //Return
-                return response()->json(ApiReturn::data('Registro atualizado com sucesso.', 2000, null, $registro), 200);
-            }
         } catch (\Exception $e) {
             if (config('app.debug')) {
                 return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
@@ -186,70 +150,6 @@ class BrigadaController extends Controller
             }
 
             return response()->json(ApiReturn::data('Registros enviado com sucesso.', 2000, null, $seguranca_medidas), 200);
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function ronda_store(Request $request, $empresa_id)
-    {
-        try {
-            //Atualisar objeto Auth::user()
-            SuporteFacade::setUserLogged($empresa_id);
-
-            //request
-            $request['data'] = date('d/m/Y');
-            $request['hora'] = date('H:i:s');
-
-            //Incluindo registro
-            $registro = BrigadaRonda::create($request->all());
-
-            //gravar transacao
-            Transacoes::transacaoRecord(3, 1, 'brigadas', $request, $request);
-
-            //Gravar dados na tabela brigadas_rondas_seguranca_medidas''''''''''''''''''''''''''''''''''''''''
-            $brigada_ronda_id = $registro['id'];
-            $numero_pavimentos = 50;
-            $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
-
-            for($i=1; $i<=$numero_pavimentos; $i++) {
-                foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
-                    if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
-                        //Dados Atual
-                        $dadosAtual = array();
-                        $dadosAtual['brigada_ronda_id'] = $brigada_ronda_id;
-                        $dadosAtual['pavimento'] = $i;
-                        $dadosAtual['seguranca_medida_id'] = $seguranca_medida_id;
-                        $dadosAtual['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
-                        $dadosAtual['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
-                        $dadosAtual['seguranca_medida_tipo'] = $request['seguranca_medida_tipo_' . $i . '_' . $seguranca_medida_id];
-                        $dadosAtual['seguranca_medida_observacao'] = $request['seguranca_medida_observacao_' . $i . '_' . $seguranca_medida_id];
-                        $dadosAtual['conferencia'] = $request['conferencia_' . $i . '_' . $seguranca_medida_id];
-                        $dadosAtual['observacao'] = $request['observacao_' . $i . '_' . $seguranca_medida_id];
-
-                        $brigada_ronda_seguranca_medida = BrigadaRondaSegurancaMedida::where('brigada_ronda_id', $brigada_ronda_id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->get();
-
-                        if ($brigada_ronda_seguranca_medida->count() == 1) {
-                            BrigadaRondaSegurancaMedida::where('brigada_ronda_id', $brigada_ronda_id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->update($dadosAtual);
-
-                            //gravar transacao
-                            Transacoes::transacaoRecord(4, 2, 'brigadas', $brigada_ronda_seguranca_medida[0], $dadosAtual);
-                        } else {
-                            BrigadaRondaSegurancaMedida::create($dadosAtual);
-
-                            //gravar transacao
-                            Transacoes::transacaoRecord(4, 1, 'brigadas', $dadosAtual, $dadosAtual);
-                        }
-                    }
-                }
-            }
-            //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-            return response()->json(ApiReturn::data('Registro criado com sucesso.', 2010, null, null), 201);
         } catch (\Exception $e) {
             if (config('app.debug')) {
                 return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);

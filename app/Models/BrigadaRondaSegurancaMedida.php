@@ -19,8 +19,9 @@ class BrigadaRondaSegurancaMedida extends Model
         'seguranca_medida_quantidade',
         'seguranca_medida_tipo',
         'seguranca_medida_observacao',
-        'conferencia',
-        'observacao'
+        'status',
+        'observacao',
+        'foto'
     ];
 
     protected function setSegurancaMedidaQuantidadeAttribute($value)

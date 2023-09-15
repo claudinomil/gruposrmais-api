@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\API\ApiReturn;
 use App\Facades\SuporteFacade;
+use App\Facades\Transacoes;
 use App\Models\BrigadaEscala;
 use App\Models\BrigadaRonda;
+use App\Models\BrigadaRondaSegurancaMedida;
 use App\Models\Cliente;
 use App\Models\ClienteServico;
 use App\Models\ClienteServicoBrigadista;
@@ -500,33 +502,12 @@ class ClienteServicoController extends Controller
 
     //Eventos para QRCode - Início''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
     //Eventos para QRCode - Início''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-    public function qrcode_dados($id)
-    {
-        try {
-            $registro = $this->cliente_servico
-                ->leftJoin('clientes', 'clientes.id', '=', 'clientes_servicos.cliente_id')
-                ->leftJoin('funcionarios', 'funcionarios.id', '=', 'clientes_servicos.responsavel_funcionario_id')
-                ->leftJoin('servicos', 'servicos.id', '=', 'clientes_servicos.servico_id')
-                ->leftJoin('servico_status', 'servico_status.id', '=', 'clientes_servicos.servico_status_id')
-                ->select(['clientes_servicos.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'servicos.servico_tipo_id', 'servicos.name as servicoName', 'servico_status.name as servicoStatusName'])
-                ->where('clientes_servicos.id', $id)
-                ->get();
 
-            if (!$registro) {
-                return response()->json(ApiReturn::data('Registro não encontrado.', 4040, null, null), 404);
-            } else {
-                return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
-            }
-        } catch (\Exception $e) {
-            if (config('app.debug')) {
-                return response()->json(ApiReturn::data($e->getMessage(), 5000, null, null), 500);
-            }
-
-            return response()->json(ApiReturn::data('Houve um erro ao realizar a operação.', 5000, null, null), 500);
-        }
-    }
-
-    public function qrcode_informacoes($id)
+    /*
+     * Informações Gerais do Cliente Serviço
+     * Retorna Dados da Brigada (Escalas e Rondas)
+     */
+    public function qrcode_brigada_informacoes($id)
     {
         try {
             //Array
@@ -573,7 +554,12 @@ class ClienteServicoController extends Controller
         }
     }
 
-    public function qrcode_brigada_presenca($id)
+    /*
+     * Brigada Escalas
+     * Retorna Dados da Brigada (Escalas) conforme Data atual
+     * Para o Brigadista Iniciar e Encerrar o Serviço
+     */
+    public function qrcode_brigada_escalas($id)
     {
         try {
             //Array
@@ -618,6 +604,18 @@ class ClienteServicoController extends Controller
                     ->where('brigadas_escalas.data_chegada', '=', $data)
                     ->get();
 
+                //Rondas
+                $ids = array();
+
+                foreach ($registro['escalas'] as $escala) {
+                    $ids[] = $escala['id'];
+                }
+
+                $registro['rondas'] = BrigadaRonda
+                    ::whereIn('brigadas_rondas.brigada_escala_id', $ids)
+                    ->get();
+
+                //Return
                 return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registro), 200);
             }
         } catch (\Exception $e) {
@@ -629,7 +627,11 @@ class ClienteServicoController extends Controller
         }
     }
 
-    public function qrcode_gravar_presenca(Request $request, $brigada_escala_id)
+    /*
+     * Brigada Escalas
+     * Grava dados de Chegada, Rondas e Saída
+     */
+    public function qrcode_brigada_escala_operacao_salvar(Request $request, $brigada_escala_id)
     {
         //Verificando se dados do Usuário conferem
         $user = DB::table('users')->where('email', $request['email'])->get();
@@ -639,26 +641,144 @@ class ClienteServicoController extends Controller
             if (Hash::check($request['password'], $user[0]->password)) {
                 $brigada_escala = BrigadaEscala::find($brigada_escala_id);
 
+                //Pegar user_id e empresa_id para usar nas transações'''''''''''''''''
+                $user_id = $user[0]->id;
+                $empresa_id = SuporteFacade::retornaEmpresaId(1, $brigada_escala_id);
+                //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
                 if (!$brigada_escala) {
                     return response()->json(ApiReturn::data('Escala não encontrada.', 4060, null, null), 200);
                 } else {
-                    //Acertos para Iniciar Serviço
-                    if ($request['iniciar_encerrar'] == 1) {
+                    //OPERAÇÃO: Iniciar Serviço
+                    if ($request['brigada_escala_operacao'] == 1) {
+                        //Acertos request
                         $request['escala_frequencia_id'] = 1;
                         $request['foto_chegada_real'] = $request['foto_real'];
                         $request['data_chegada_real'] = date('Y-m-d');
                         $request['hora_chegada_real'] = date('H:i:s');
+
+                        //Log de Transações: Dados Anterior
+                        $brigadaEscala = BrigadaEscala::where('id', $brigada_escala_id)->get()[0];
+                        $dadosAnterior = array();
+                        $dadosAnterior['brigada_escala_id'] = $brigadaEscala['id'];
+                        $dadosAnterior['escala_frequencia_id'] = $brigadaEscala['escala_frequencia_id'];
+                        $dadosAnterior['data_chegada_real'] = $brigadaEscala['data_chegada_real'];
+                        $dadosAnterior['hora_chegada_real'] = $brigadaEscala['hora_chegada_real'];
+                        $dadosAnterior['data_saida_real'] = $brigadaEscala['data_saida_real'];
+                        $dadosAnterior['hora_saida_real'] = $brigadaEscala['hora_saida_real'];
+
+                        //Log de Transações: Dados Atual
+                        $dadosAtual = array();
+                        $dadosAtual['brigada_escala_id'] = $brigadaEscala['id'];
+                        $dadosAtual['escala_frequencia_id'] = $request['escala_frequencia_id'];
+                        $dadosAtual['data_chegada_real'] = $request['data_chegada_real'];
+                        $dadosAtual['hora_chegada_real'] = $request['hora_chegada_real'];
+                        $dadosAtual['data_saida_real'] = $brigadaEscala['data_saida_real'];
+                        $dadosAtual['hora_saida_real'] = $brigadaEscala['hora_saida_real'];
+
+                        //Alterando registro
+                        $brigada_escala->update($request->all());
+
+                        //Log de Transações: Gravar Transação
+                        Transacoes::transacaoRecord(5, 2, 'brigadas', $dadosAnterior, $dadosAtual, $empresa_id, $user_id);
                     }
 
-                    //Acertos para Encerrar Serviço
-                    if ($request['iniciar_encerrar'] == 2) {
+                    //OPERAÇÃO: Iniciar Ronda
+                    if ($request['brigada_escala_operacao'] == 2) {
+                        //Acertos request
+                        $request['foto'] = $request['foto_real'];
+                        $request['data_encerramento_ronda'] = date('Y-m-d');
+                        $request['hora_encerramento_ronda'] = date('H:i:s');
+
+                        //Alterando registro
+                        $registro = BrigadaRonda::create($request->all());
+
+                        //Log de Transações'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                        //gravar transacao
+                        Transacoes::transacaoRecord(3, 1, 'brigadas', $request, $request, $empresa_id, $user_id);
+                        //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+                        //Gravar dados na tabela brigadas_rondas_seguranca_medidas''''''''''''''''''''''''''''''''''''''
+                        $brigada_ronda_id = $registro['id'];
+
+                        SuporteFacade::createRondaSegurancaMedidas($brigada_ronda_id, $request->all());
+
+
+
+//                        $numero_pavimentos = 50;
+//                        $ids_seguranca_medidas = array_unique($request['ids_seguranca_medidas']); //Retirando ids repetidos
+//
+//                        for($i=1; $i<=$numero_pavimentos; $i++) {
+//                            foreach ($ids_seguranca_medidas as $seguranca_medida_id) {
+//                                if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida_id])) {
+//                                    //Dados Atual
+//                                    $dadosAtual = array();
+//                                    $dadosAtual['brigada_ronda_id'] = $brigada_ronda_id;
+//                                    $dadosAtual['pavimento'] = $i;
+//                                    $dadosAtual['seguranca_medida_id'] = $seguranca_medida_id;
+//                                    $dadosAtual['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida_id];
+//                                    $dadosAtual['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida_id];
+//                                    $dadosAtual['seguranca_medida_tipo'] = $request['seguranca_medida_tipo_' . $i . '_' . $seguranca_medida_id];
+//                                    $dadosAtual['seguranca_medida_observacao'] = $request['seguranca_medida_observacao_' . $i . '_' . $seguranca_medida_id];
+//                                    $dadosAtual['status'] = $request['status_' . $i . '_' . $seguranca_medida_id];
+//                                    $dadosAtual['observacao'] = $request['observacao_' . $i . '_' . $seguranca_medida_id];
+//
+//                                    $brigada_ronda_seguranca_medida = BrigadaRondaSegurancaMedida::where('brigada_ronda_id', $brigada_ronda_id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->get();
+//
+//                                    if ($brigada_ronda_seguranca_medida->count() == 1) {
+//                                        BrigadaRondaSegurancaMedida::where('brigada_ronda_id', $brigada_ronda_id)->where('pavimento', $i)->where('seguranca_medida_id', $seguranca_medida_id)->update($dadosAtual);
+//
+//                                        //gravar transacao
+//                                        Transacoes::transacaoRecord(4, 2, 'brigadas', $brigada_ronda_seguranca_medida[0], $dadosAtual);
+//                                    } else {
+//                                        BrigadaRondaSegurancaMedida::create($dadosAtual);
+//
+//                                        //gravar transacao
+//                                        Transacoes::transacaoRecord(4, 1, 'brigadas', $dadosAtual, $dadosAtual);
+//                                    }
+//                                }
+//                            }
+//                        }
+
+
+
+
+
+                        //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+                    }
+
+                    //OPERAÇÃO: Encerrar Serviço
+                    if ($request['brigada_escala_operacao'] == 3) {
+                        //Acertos request
                         $request['foto_saida_real'] = $request['foto_real'];
                         $request['data_saida_real'] = date('Y-m-d');
                         $request['hora_saida_real'] = date('H:i:s');
-                    }
 
-                    //Alterando registro
-                    $brigada_escala->update($request->all());
+                        //Log de Transações: Dados Anterior
+                        $brigadaEscala = BrigadaEscala::where('id', $brigada_escala_id)->get()[0];
+                        $dadosAnterior = array();
+                        $dadosAnterior['brigada_escala_id'] = $brigadaEscala['id'];
+                        $dadosAnterior['escala_frequencia_id'] = $brigadaEscala['escala_frequencia_id'];
+                        $dadosAnterior['data_chegada_real'] = $brigadaEscala['data_chegada_real'];
+                        $dadosAnterior['hora_chegada_real'] = $brigadaEscala['hora_chegada_real'];
+                        $dadosAnterior['data_saida_real'] = $brigadaEscala['data_saida_real'];
+                        $dadosAnterior['hora_saida_real'] = $brigadaEscala['hora_saida_real'];
+
+                        //Log de Transações: Dados Atual
+                        $dadosAtual = array();
+                        $dadosAtual['brigada_escala_id'] = $brigadaEscala['id'];
+                        $dadosAtual['escala_frequencia_id'] = $brigadaEscala['escala_frequencia_id'];
+                        $dadosAtual['data_chegada_real'] = $brigadaEscala['data_chegada_real'];
+                        $dadosAtual['hora_chegada_real'] = $brigadaEscala['hora_chegada_real'];
+                        $dadosAtual['data_saida_real'] = $request['data_saida_real'];
+                        $dadosAtual['hora_saida_real'] = $request['hora_saida_real'];
+
+                        //Alterando registro
+                        $brigada_escala->update($request->all());
+
+                        //Log de Transações: Gravar Transação
+                        Transacoes::transacaoRecord(5, 2, 'brigadas', $dadosAnterior, $dadosAtual, $empresa_id, $user_id);
+                    }
 
                     return response()->json(ApiReturn::data('Escala atualizada com sucesso.', 2000, null, $brigada_escala), 200);
                 }

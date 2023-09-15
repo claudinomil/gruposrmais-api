@@ -19,7 +19,7 @@ class VisitaTecnicaSegurancaMedida extends Model
         'seguranca_medida_quantidade',
         'seguranca_medida_tipo',
         'seguranca_medida_observacao',
-        'conferencia',
+        'status',
         'observacao'
     ];
 }

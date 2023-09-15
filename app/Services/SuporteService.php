@@ -21,6 +21,7 @@ use App\Models\Servico;
 use App\Models\UserConfiguracao;
 use App\Models\VisitaTecnica;
 use App\Models\VisitaTecnicaSegurancaMedida;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -62,6 +63,19 @@ class SuporteService
 
         //Setar os dados de configurações do Usuário Logado
         Auth::setUser($user);
+    }
+
+    /*
+     * Retorna empresa_id
+     * De acordo com o id de uma tabela específica
+     *
+     * @PARAM op=1 : a partir do id da tabela brigadas_escalas
+     */
+    public function retornaEmpresaId($op, $id)
+    {
+        if ($op == 1) {
+            return BrigadaEscala::join('brigadas', 'brigadas.id', 'brigadas_escalas.brigada_id')->where('brigadas_escalas.id', $id)->get()[0]['empresa_id'];
+        }
     }
 
     /*
@@ -628,6 +642,74 @@ class SuporteService
             if ($brigada_id != 0) {
                 //Deletar na tabela brigadas
                 Brigada::find($brigada_id)->delete();
+            }
+        }
+    }
+
+    /*
+     * Incluir registros na tabela rondas_seguranca_medidas
+     */
+    public function createRondaSegurancaMedidas($brigada_ronda_id, $request)
+    {
+        $numero_pavimentos = 50;
+
+        $seguranca_medidas = SegurancaMedida::all();
+
+        for($i=1; $i<=$numero_pavimentos; $i++) {
+            foreach ($seguranca_medidas as $seguranca_medida) {
+                if (isset($request['seguranca_medida_id_' . $i . '_' . $seguranca_medida['id']])) {
+                    //Dados Atual
+                    $dadosAtual = array();
+                    $dadosAtual['brigada_ronda_id'] = $brigada_ronda_id;
+                    $dadosAtual['pavimento'] = $i;
+                    $dadosAtual['seguranca_medida_id'] = $seguranca_medida['id'];
+                    $dadosAtual['seguranca_medida_nome'] = $request['seguranca_medida_nome_' . $i . '_' . $seguranca_medida['id']];
+                    $dadosAtual['seguranca_medida_quantidade'] = $request['seguranca_medida_quantidade_' . $i . '_' . $seguranca_medida['id']];
+                    $dadosAtual['seguranca_medida_tipo'] = $request['seguranca_medida_tipo_' . $i . '_' . $seguranca_medida['id']];
+                    //$dadosAtual['seguranca_medida_observacao'] = $request['seguranca_medida_observacao_' . $i . '_' . $seguranca_medida['id']];
+                    $dadosAtual['status'] = $request['status_' . $i . '_' . $seguranca_medida['id']];
+                    $dadosAtual['observacao'] = $request['observacao_' . $i . '_' . $seguranca_medida['id']];
+                    $dadosAtual['foto'] = $request['foto_' . $i . '_' . $seguranca_medida['id']];
+
+                    BrigadaRondaSegurancaMedida::create($dadosAtual);
+
+                    //gravar transacao
+                    Transacoes::transacaoRecord(4, 1, 'brigadas', $dadosAtual, $dadosAtual);
+                }
+            }
+        }
+    }
+
+    /*
+     * Varrer as Escalas para ver se existe ATRASO ou FALTA
+     * Alterar campo escala_frequencia_id
+    */
+    public function updateEscalaFrequenciaId()
+    {
+        //Escalas com escala_frequencia_id NULL
+        $escalas = BrigadaEscala::where('escala_frequencia_id', NULL)->orWhere('escala_frequencia_id', 2)->get();
+
+        //Varrer Escalas
+        foreach ($escalas as $escala) {
+            $data_hora_atual = date('Y-m-d H:i:s');
+            $data_hora_chegada_escala = Carbon::createFromFormat('d/m/Y', $escala['data_chegada'])->format('Y-m-d').' '.$escala['hora_chegada'];
+            $data_hora_saida_escala = Carbon::createFromFormat('d/m/Y', $escala['data_saida'])->format('Y-m-d').' '.$escala['hora_saida'];
+
+            $escala_frequencia_id = '';
+
+            //ATRASO
+            if (($data_hora_atual > $data_hora_chegada_escala) and ($data_hora_atual < $data_hora_saida_escala)) {
+                $escala_frequencia_id = 2;
+            }
+
+            //FALTA
+            if ($data_hora_atual > $data_hora_saida_escala) {
+                $escala_frequencia_id = 3;
+            }
+
+            //Alterar o registro
+            if ($escala_frequencia_id != '') {
+                BrigadaEscala::where('id', $escala['id'])->update(['escala_frequencia_id' => $escala_frequencia_id]);
             }
         }
     }

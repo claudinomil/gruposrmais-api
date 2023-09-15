@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('operacao_id')->constrained('operacoes');
             $table->foreignId('submodulo_id')->constrained('submodulos');
-            $table->text('dados');
+            $table->longText('dados');
             $table->timestamps();
         });
     }

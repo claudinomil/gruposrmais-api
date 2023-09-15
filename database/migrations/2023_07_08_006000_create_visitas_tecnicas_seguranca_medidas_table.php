@@ -19,12 +19,12 @@ class CreateVisitasTecnicasSegurancaMedidasTable extends Migration
             $table->text('seguranca_medida_observacao')->nullable();
 
             /*
-             * Campo conferencia
-             * conferencia=0 : Não Conferido
-             * conferencia=1 : Aprovado
-             * conferencia=2 : Restrição
+             * Campo status
+             * status=0 : Não Conferido
+             * status=1 : Aprovado
+             * status=2 : Restrição
              */
-            $table->integer('conferencia')->nullable()->default(0);
+            $table->integer('status')->nullable()->default(0);
             $table->text('observacao')->nullable();
             $table->timestamps();
         });

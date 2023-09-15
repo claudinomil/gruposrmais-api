@@ -37,6 +37,7 @@ use App\Models\Transacao;
 use App\Models\User;
 
 use App\Models\VisitaTecnica;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -61,6 +62,12 @@ class Transacoes
 
         //Opção para campos sem id's simples, com apenas um retorno
         if ($op == 1) {
+            //Verificar se é uma data e converter para d/m/Y
+            if (strlen($dadoAtual) == 10 and substr($dadoAtual, 4, 1) == '-' and substr($dadoAtual, 7, 1) == '-') {
+                $dadoAtual = Carbon::createFromFormat('Y-m-d', $dadoAtual)->format('d/m/Y');
+            }
+
+            //Return
             $retorno = $this->abreSpan . ':: ' . $etiqueta . ": " . $this->fechaSpan . $dadoAtual . "<br>";
         }
 
@@ -129,7 +136,7 @@ class Transacoes
                 $brigada_escala = BrigadaEscala::where('id', $dadoAtual)->get()[0];
                 $search_brigada_id = $brigada_escala['brigada_id'];
 
-                $search_dados_escala = '##Escala: '.$brigada_escala['escala_tipo_nome'].' ##Chegada: '.$brigada_escala['data_chegada'].' '.$brigada_escala['hora_chegada'].' ##Brigadista: '.$brigada_escala['funcionario_nome'].' ##Ala '.$brigada_escala['ala'];
+                $search_dados_escala = '<br>'.'&nbsp;&nbsp;&nbsp;#Escala: '.$brigada_escala['escala_tipo_nome'].'<br>'.'&nbsp;&nbsp;&nbsp;#Chegada: '.$brigada_escala['data_chegada'].' '.$brigada_escala['hora_chegada'].'<br>'.'&nbsp;&nbsp;&nbsp;#Brigadista: '.$brigada_escala['funcionario_nome'].'<br>'.'&nbsp;&nbsp;&nbsp;#Ala '.$brigada_escala['ala'];
 
                 $brigada = Brigada::where('id', $search_brigada_id)->get()[0];
                 $search_cliente_servico_id = $brigada['cliente_servico_id'];
@@ -205,9 +212,21 @@ class Transacoes
      * @PARAM op=1 : Transação na tabela principal do Submódulo
      * @PARAM op=? : Transação em tabelas pivot ou outras tabelas referentes ao Submódulo
      */
-    public function transacaoRecord($op=1, $operacao, $submodulo, $dadosAnterior, $dadosAtual) {
+    public function transacaoRecord($op=1, $operacao, $submodulo, $dadosAnterior, $dadosAtual, $userLoggedId='', $userLoggedEmpresaId='') {
+        //Verificação do Usuário Logado
+        $userVerificado = true;
+
+        if ($userLoggedId == '' and $userLoggedEmpresaId == '') {
+            if (Auth::check()) {
+                $userLoggedId = Auth::user()->id;
+                $userLoggedEmpresaId = Auth::user()->empresa_id;
+            } else {
+                $userVerificado = false;
+            }
+        }
+
         //Gravar transação
-        if (Auth::check()) {
+        if ($userVerificado) {
             //submodulo_id'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
             $data = DB::table('submodulos')->select(['id'])->where('prefix_route', $submodulo)->get()->toArray();
 
@@ -623,7 +642,7 @@ class Transacoes
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_quantidade'], $dadosAtual['seguranca_medida_quantidade'], 'Segurança Medida Quantidade', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_tipo'], $dadosAtual['seguranca_medida_tipo'], 'Segurança Medida Tipo', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_observacao'], $dadosAtual['seguranca_medida_observacao'], 'Segurança Medida Observação', '', '');
-                    $dados .= $this->retornaDado(1, $dadosAnterior['conferencia'], $dadosAtual['conferencia'], 'Conferência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['status'], $dadosAtual['status'], 'Status', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['observacao'], $dadosAtual['observacao'], 'Observação', '', '');
                 }
             }
@@ -664,15 +683,17 @@ class Transacoes
 
                 //Tabela brigadas_rondas
                 if ($op == 3) {
-                    $dados .= '<b>:: Brigadas Incêndios Rondas</b>'.'<br><br>';
+                    $dados .= '<b>:: Brigadas Incêndios Escalas (Ronda)</b>'.'<br><br>';
                     $dados .= $this->retornaDado(6, $dadosAnterior['brigada_escala_id'], $dadosAtual['brigada_escala_id'], 'Brigada', Brigada::class, 'name');
-                    $dados .= $this->retornaDado(1, $dadosAnterior['data'], $dadosAtual['data'], 'Data', '', '');
-                    $dados .= $this->retornaDado(1, $dadosAnterior['hora'], $dadosAtual['hora'], 'Hora', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_inicio_ronda'], $dadosAtual['data_inicio_ronda'], 'Data Início Ronda', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_inicio_ronda'], $dadosAtual['hora_inicio_ronda'], 'Hora Início Ronda', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['data_encerramento_ronda'], $dadosAtual['data_encerramento_ronda'], 'Data Encerramento Ronda', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['hora_encerramento_ronda'], $dadosAtual['hora_encerramento_ronda'], 'Hora Encerramento Ronda', '', '');
                 }
 
                 //Tabela brigadas_rondas_seguranca_medidas
                 if ($op == 4) {
-                    $dados .= '<b>:: Brigadas Incêndios Rondas Segurança Medidas</b>' . '<br><br>';
+                    $dados .= '<b>:: Brigadas Incêndios Escalas (Ronda Segurança Medidas)</b>' . '<br><br>';
                     $dados .= $this->retornaDado(7, $dadosAnterior['brigada_ronda_id'], $dadosAtual['brigada_ronda_id'], 'Brigada', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['pavimento'], $dadosAtual['pavimento'], 'Pavimento', '', '');
                     $dados .= $this->retornaDado(2, $dadosAnterior['seguranca_medida_id'], $dadosAtual['seguranca_medida_id'], 'Segurança Medida', SegurancaMedida::class, 'name');
@@ -680,14 +701,14 @@ class Transacoes
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_quantidade'], $dadosAtual['seguranca_medida_quantidade'], 'Segurança Medida Quantidade', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_tipo'], $dadosAtual['seguranca_medida_tipo'], 'Segurança Medida Tipo', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['seguranca_medida_observacao'], $dadosAtual['seguranca_medida_observacao'], 'Segurança Medida Observação', '', '');
-                    $dados .= $this->retornaDado(1, $dadosAnterior['conferencia'], $dadosAtual['conferencia'], 'Conferência', '', '');
+                    $dados .= $this->retornaDado(1, $dadosAnterior['status'], $dadosAtual['status'], 'Status', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['observacao'], $dadosAtual['observacao'], 'Observação', '', '');
                 }
 
                 //Tabela brigadas_escalas (frequencia)
                 if ($op == 5) {
                     $dados .= '<b>:: Brigadas Incêndios Escalas (Frequência)</b>'.'<br><br>';
-                    $dados .= $this->retornaDado(5, $dadosAnterior['brigada_id'], $dadosAtual['brigada_id'], 'Brigada', '', '');
+                    $dados .= $this->retornaDado(6, $dadosAnterior['brigada_escala_id'], $dadosAtual['brigada_escala_id'], 'Brigada', Brigada::class, 'name');
                     $dados .= $this->retornaDado(2, $dadosAnterior['escala_frequencia_id'], $dadosAtual['escala_frequencia_id'], 'Escala Frequência', EscalaFrequencia::class, 'name');
                     $dados .= $this->retornaDado(1, $dadosAnterior['data_chegada_real'], $dadosAtual['data_chegada_real'], 'Data Chegada Real', '', '');
                     $dados .= $this->retornaDado(1, $dadosAnterior['hora_chegada_real'], $dadosAtual['hora_chegada_real'], 'Hora Chegada Real', '', '');
@@ -746,10 +767,10 @@ class Transacoes
             if ($dados != '') {
                 $trasaction = Array();
 
-                $trasaction['empresa_id'] = Auth::user()->empresa_id;
+                $trasaction['empresa_id'] = $userLoggedEmpresaId;
                 $trasaction['date'] = date('Y-m-d');
                 $trasaction['time'] = date('H:i:s');
-                $trasaction['user_id'] = Auth::user()->id;
+                $trasaction['user_id'] = $userLoggedId;
                 $trasaction['operacao_id'] = $operacao;
                 $trasaction['submodulo_id'] = $submodulo_id;
                 $trasaction['dados'] = $dados;

@@ -20,8 +20,9 @@ class CreateBrigadasRondasSegurancaMedidasTable extends Migration
             $table->string('seguranca_medida_tipo')->nullable();
             $table->text('seguranca_medida_observacao')->nullable();
 
-            $table->integer('conferencia')->nullable()->default(0);
+            $table->integer('status')->nullable()->default(0);
             $table->text('observacao')->nullable();
+            $table->longText('foto')->nullable();
 
             $table->timestamps();
         });
