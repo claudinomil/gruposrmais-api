@@ -286,9 +286,37 @@ class FuncionarioController extends Controller
         }
     }
 
-    public function search($field, $value, $empresa_id)
+//    public function search($field, $value, $empresa_id)
+//    {
+//        $registros = DB::table('funcionarios')
+//            ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
+//            ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
+//            ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
+//            ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
+//            ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
+//            ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
+//            ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
+//            ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
+//            ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
+//            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
+//            ->where('funcionarios.empresa_id', '=', $empresa_id)
+//            ->where($field, 'like', '%' . $value . '%')
+//            ->get();
+//
+//        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
+//    }
+
+    public function filter($array_dados, $empresa_id)
     {
-        $registros = DB::table('funcionarios')
+        //Filtros enviados pelo Client
+        $filtros = explode(',', $array_dados);
+
+        //Limpar Querys executadas
+        //DB::enableQueryLog();
+
+
+        //Registros
+        $registros = $this->funcionario
             ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
             ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
             ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
@@ -300,30 +328,54 @@ class FuncionarioController extends Controller
             ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
             ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
             ->where('funcionarios.empresa_id', '=', $empresa_id)
-            ->where($field, 'like', '%' . $value . '%')
-            ->get();
+            ->where(function($query) use($filtros) {
+                //Variavel para controle
+                $qtdFiltros = count($filtros) / 4;
+                $indexCampo = 0;
+
+                for($i=1; $i<=$qtdFiltros; $i++) {
+                    //Valores do Filtro
+                    $condicao = $filtros[$indexCampo];
+                    $campo = $filtros[$indexCampo+1];
+                    $operacao = $filtros[$indexCampo+2];
+                    $dado = $filtros[$indexCampo+3];
+
+                    //Operações
+                    if ($operacao == 1) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado.'%');} else {$query->orwhere($campo, 'like', '%'.$dado.'%');}
+                    }
+                    if ($operacao == 2) {
+                        if ($condicao == 1) {$query->where($campo, '=', $dado);} else {$query->orwhere($campo, '=', $dado);}
+                    }
+                    if ($operacao == 3) {
+                        if ($condicao == 1) {$query->where($campo, '>', $dado);} else {$query->orwhere($campo, '>', $dado);}
+                    }
+                    if ($operacao == 4) {
+                        if ($condicao == 1) {$query->where($campo, '>=', $dado);} else {$query->orwhere($campo, '>=', $dado);}
+                    }
+                    if ($operacao == 5) {
+                        if ($condicao == 1) {$query->where($campo, '<', $dado);} else {$query->orwhere($campo, '<', $dado);}
+                    }
+                    if ($operacao == 6) {
+                        if ($condicao == 1) {$query->where($campo, '<=', $dado);} else {$query->orwhere($campo, '<=', $dado);}
+                    }
+                    if ($operacao == 7) {
+                        if ($condicao == 1) {$query->where($campo, 'like', $dado.'%');} else {$query->orwhere($campo, 'like', $dado.'%');}
+                    }
+                    if ($operacao == 8) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado);} else {$query->orwhere($campo, 'like', '%'.$dado);}
+                    }
+
+                    //Atualizar indexCampo
+                    $indexCampo = $indexCampo + 4;
+                }
+            }
+            )->get();
+
+        //Código SQL Bruto
+        //$sql = DB::getQueryLog();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
-    }
-
-    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
-    {
-        $registros = DB::table('funcionarios')
-            ->leftJoin('identidade_orgaos', 'funcionarios.personal_identidade_orgao_id', '=', 'identidade_orgaos.id')
-            ->leftJoin('estados', 'funcionarios.personal_identidade_estado_id', '=', 'estados.id')
-            ->leftJoin('generos', 'funcionarios.genero_id', '=', 'generos.id')
-            ->leftJoin('contratacao_tipos', 'funcionarios.contratacao_tipo_id', '=', 'contratacao_tipos.id')
-            ->leftJoin('departamentos', 'funcionarios.departamento_id', '=', 'departamentos.id')
-            ->leftJoin('funcoes', 'funcionarios.funcao_id', '=', 'funcoes.id')
-            ->leftJoin('escolaridades', 'funcionarios.escolaridade_id', '=', 'escolaridades.id')
-            ->leftJoin('estados_civis', 'funcionarios.estado_civil_id', '=', 'estados_civis.id')
-            ->leftJoin('bancos', 'funcionarios.banco_id', '=', 'bancos.id')
-            ->select(['funcionarios.*', 'identidade_orgaos.name as identidade_orgaosName', 'estados.name as identidadeEstadoName', 'generos.name as generoName', 'contratacao_tipos.name as contratacaoTipoName', 'estados_civis.name as estado_civilName', 'bancos.name as bancoName', 'departamentos.name as departamentoName', 'funcoes.name as funcaoName'])
-            ->where('funcionarios.empresa_id', '=', $empresa_id)
-            ->where($fieldSearch, 'like', '%' . $fieldValue . '%')
-            ->get($fieldReturn);
-
-        return response()->json(ApiReturn::data('', 2000, null, $registros), 200);
     }
 
     public function store_documentos(Request $request, $empresa_id)

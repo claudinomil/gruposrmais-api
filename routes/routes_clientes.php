@@ -5,8 +5,7 @@ use App\Http\Controllers\ClienteController;
 Route::prefix('clientes')->group(function () {
     Route::get('/index/{empresa_id}', [ClienteController::class, 'index'])->middleware(['auth:api', 'scope:claudino']);
     Route::get('/show/{id}', [ClienteController::class, 'show'])->middleware(['auth:api', 'scope:claudino']);
-    Route::get('/search/{field}/{value}/{empresa_id}', [ClienteController::class, 'search'])->middleware(['auth:api', 'scope:claudino']);
-    Route::get('/research/{fieldSearch}/{fieldValue}/{fieldReturn}/{empresa_id}', [ClienteController::class, 'research'])->middleware(['auth:api', 'scope:claudino']);
+    Route::get('/filter/{array_dados}/{empresa_id}', [ClienteController::class, 'filter'])->middleware(['auth:api', 'scope:claudino']);
     Route::post('/store/{empresa_id}', [ClienteController::class, 'store'])->middleware(['auth:api', 'scope:claudino']);
     Route::put('/update/{id}/{empresa_id}', [ClienteController::class, 'update'])->middleware(['auth:api', 'scope:claudino']);
     Route::delete('/destroy/{id}/{empresa_id}', [ClienteController::class, 'destroy'])->middleware(['auth:api', 'scope:claudino']);

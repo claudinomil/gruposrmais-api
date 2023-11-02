@@ -485,8 +485,31 @@ class ClienteServicoController extends Controller
         }
     }
 
-    public function search($field, $value, $empresa_id)
+//    public function search($field, $value, $empresa_id)
+//    {
+//        $registros = $this->cliente_servico
+//            ->leftJoin('clientes', 'clientes_servicos.cliente_id', '=', 'clientes.id')
+//            ->leftJoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', '=', 'funcionarios.id')
+//            ->leftJoin('servicos', 'clientes_servicos.servico_id', '=', 'servicos.id')
+//            ->leftJoin('servico_status', 'clientes_servicos.servico_status_id', '=', 'servico_status.id')
+//            ->select(['clientes_servicos.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'servicos.servico_tipo_id', 'servicos.name as servicoName', 'servico_status.name as servicoStatusName'])
+//            ->where('servicos.empresa_id', $empresa_id)
+//            ->where($field, 'like', '%' . $value . '%')
+//            ->get();
+//
+//        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
+//    }
+
+    public function filter($array_dados, $empresa_id)
     {
+        //Filtros enviados pelo Client
+        $filtros = explode(',', $array_dados);
+
+        //Limpar Querys executadas
+        //DB::enableQueryLog();
+
+
+        //Registros
         $registros = $this->cliente_servico
             ->leftJoin('clientes', 'clientes_servicos.cliente_id', '=', 'clientes.id')
             ->leftJoin('funcionarios', 'clientes_servicos.responsavel_funcionario_id', '=', 'funcionarios.id')
@@ -494,8 +517,52 @@ class ClienteServicoController extends Controller
             ->leftJoin('servico_status', 'clientes_servicos.servico_status_id', '=', 'servico_status.id')
             ->select(['clientes_servicos.*', 'clientes.name as clienteName', 'funcionarios.name as funcionarioName', 'servicos.servico_tipo_id', 'servicos.name as servicoName', 'servico_status.name as servicoStatusName'])
             ->where('servicos.empresa_id', $empresa_id)
-            ->where($field, 'like', '%' . $value . '%')
-            ->get();
+            ->where(function($query) use($filtros) {
+                //Variavel para controle
+                $qtdFiltros = count($filtros) / 4;
+                $indexCampo = 0;
+
+                for($i=1; $i<=$qtdFiltros; $i++) {
+                    //Valores do Filtro
+                    $condicao = $filtros[$indexCampo];
+                    $campo = $filtros[$indexCampo+1];
+                    $operacao = $filtros[$indexCampo+2];
+                    $dado = $filtros[$indexCampo+3];
+
+                    //Operações
+                    if ($operacao == 1) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado.'%');} else {$query->orwhere($campo, 'like', '%'.$dado.'%');}
+                    }
+                    if ($operacao == 2) {
+                        if ($condicao == 1) {$query->where($campo, '=', $dado);} else {$query->orwhere($campo, '=', $dado);}
+                    }
+                    if ($operacao == 3) {
+                        if ($condicao == 1) {$query->where($campo, '>', $dado);} else {$query->orwhere($campo, '>', $dado);}
+                    }
+                    if ($operacao == 4) {
+                        if ($condicao == 1) {$query->where($campo, '>=', $dado);} else {$query->orwhere($campo, '>=', $dado);}
+                    }
+                    if ($operacao == 5) {
+                        if ($condicao == 1) {$query->where($campo, '<', $dado);} else {$query->orwhere($campo, '<', $dado);}
+                    }
+                    if ($operacao == 6) {
+                        if ($condicao == 1) {$query->where($campo, '<=', $dado);} else {$query->orwhere($campo, '<=', $dado);}
+                    }
+                    if ($operacao == 7) {
+                        if ($condicao == 1) {$query->where($campo, 'like', $dado.'%');} else {$query->orwhere($campo, 'like', $dado.'%');}
+                    }
+                    if ($operacao == 8) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado);} else {$query->orwhere($campo, 'like', '%'.$dado);}
+                    }
+
+                    //Atualizar indexCampo
+                    $indexCampo = $indexCampo + 4;
+                }
+            }
+            )->get();
+
+        //Código SQL Bruto
+        //$sql = DB::getQueryLog();
 
         return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
     }

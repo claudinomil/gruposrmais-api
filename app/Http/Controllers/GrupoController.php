@@ -132,6 +132,9 @@ class GrupoController extends Controller
             //Submódulos
             $registros['submodulos'] = Submodulo::all();
 
+            //Permissões
+            $registros['permissoes'] = Permissao::all();
+
             return response()->json(ApiReturn::data('Registro enviado com sucesso.', 2000, null, $registros), 200);
         } catch (\Exception $e) {
             if (config('app.debug')) {
@@ -317,13 +320,127 @@ class GrupoController extends Controller
         }
     }
 
-    public function search($field, $value, $empresa_id)
-    {
-        //Registros
-        $registros = array();
+//    public function search($field, $value, $empresa_id)
+//    {
+//        //Registros
+//        $registros = array();
+//
+//        //Varrendo Grupos para pegar Permissoes
+//        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->where($field, 'like', '%'.$value.'%')->get();
+//        foreach ($grupos as $key => $grupo) {
+//            $grupo_id = $grupo->id;
+//            $grupo_name = $grupo->name;
+//
+//            $permissoes = "<div class='row'>";
+//
+//            //Varrendo Submodulos para pegar Permissoes por submodulos
+//            $submodulos = Submodulo::all();
+//            foreach ($submodulos as $key => $submodulo) {
+//                $submodulo_id = $submodulo->id;
+//                $submodulo_name = $submodulo->name;
+//
+//                //Buscando Permissoes
+//                $dados = DB::table('grupos_permissoes')
+//                    ->leftJoin('permissoes', 'permissoes.id', '=', 'grupos_permissoes.permissao_id')
+//                    ->select(['permissoes.name as permissaoName'])
+//                    ->where('grupos_permissoes.grupo_id', $grupo_id)
+//                    ->where('permissoes.submodulo_id', $submodulo_id)
+//                    ->get();
+//
+//                $permissoesSubmodulo = "<div class='col-12 col-md-3 pb-3'>";
+//                $permissoesSubmodulo .= "<b class='pb-3'>".$submodulo_name."</b>";
+//
+//                $ctrl = 0;
+//                foreach ($dados as $key => $dado) {
+//                    $ctrl++;
+//
+//                    $p = explode('_', $dado->permissaoName);
+//                    $p = $p[count($p)-1];
+//
+//                    if ($p == 'list') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-primary'></i> Listar</label></div>";}
+//                    if ($p == 'show') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-info'></i> Mostrar</label></div>";}
+//                    if ($p == 'create') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-success'></i> Criar</label></div>";}
+//                    if ($p == 'edit') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-warning'></i> Editar</label></div>";}
+//                    if ($p == 'destroy') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-danger'></i> Deletar</label></div>";}
+//
+//                    $permissoesSubmodulo .= $perm;
+//                }
+//
+//                $permissoesSubmodulo .= "</div>";
+//
+//                if ($ctrl > 0) {$permissoes .= $permissoesSubmodulo;}
+//            }
+//
+//            $permissoes .= "</div>";
+//
+//            //Montando registros de retorno
+//            $registros[] = [
+//                'id' => $grupo_id,
+//                'name' => $grupo_name,
+//                'permissoes' => $permissoes
+//            ];
+//        }
+//
+//        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
+//    }
 
-        //Varrendo Grupos para pegar Permissoes
-        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->where($field, 'like', '%'.$value.'%')->get();
+    public function filter($array_dados, $empresa_id)
+    {
+        //Filtros enviados pelo Client
+        $filtros = explode(',', $array_dados);
+
+        //Limpar Querys executadas
+        //DB::enableQueryLog();
+
+
+        //Grupos
+        $grupos = $this->grupo
+            ->select(['grupos.*'])
+            ->where('empresa_id', '=', $empresa_id)
+            ->where(function($query) use($filtros) {
+                //Variavel para controle
+                $qtdFiltros = count($filtros) / 4;
+                $indexCampo = 0;
+
+                for($i=1; $i<=$qtdFiltros; $i++) {
+                    //Valores do Filtro
+                    $condicao = $filtros[$indexCampo];
+                    $campo = $filtros[$indexCampo+1];
+                    $operacao = $filtros[$indexCampo+2];
+                    $dado = $filtros[$indexCampo+3];
+
+                    //Operações
+                    if ($operacao == 1) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado.'%');} else {$query->orwhere($campo, 'like', '%'.$dado.'%');}
+                    }
+                    if ($operacao == 2) {
+                        if ($condicao == 1) {$query->where($campo, '=', $dado);} else {$query->orwhere($campo, '=', $dado);}
+                    }
+                    if ($operacao == 3) {
+                        if ($condicao == 1) {$query->where($campo, '>', $dado);} else {$query->orwhere($campo, '>', $dado);}
+                    }
+                    if ($operacao == 4) {
+                        if ($condicao == 1) {$query->where($campo, '>=', $dado);} else {$query->orwhere($campo, '>=', $dado);}
+                    }
+                    if ($operacao == 5) {
+                        if ($condicao == 1) {$query->where($campo, '<', $dado);} else {$query->orwhere($campo, '<', $dado);}
+                    }
+                    if ($operacao == 6) {
+                        if ($condicao == 1) {$query->where($campo, '<=', $dado);} else {$query->orwhere($campo, '<=', $dado);}
+                    }
+                    if ($operacao == 7) {
+                        if ($condicao == 1) {$query->where($campo, 'like', $dado.'%');} else {$query->orwhere($campo, 'like', $dado.'%');}
+                    }
+                    if ($operacao == 8) {
+                        if ($condicao == 1) {$query->where($campo, 'like', '%'.$dado);} else {$query->orwhere($campo, 'like', '%'.$dado);}
+                    }
+
+                    //Atualizar indexCampo
+                    $indexCampo = $indexCampo + 4;
+                }
+            }
+            )->get();
+
         foreach ($grupos as $key => $grupo) {
             $grupo_id = $grupo->id;
             $grupo_name = $grupo->name;
@@ -378,70 +495,9 @@ class GrupoController extends Controller
             ];
         }
 
-        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
-    }
+        //Código SQL Bruto
+        //$sql = DB::getQueryLog();
 
-    public function research($fieldSearch, $fieldValue, $fieldReturn, $empresa_id)
-    {
-        //Registros
-        $registros = array();
-
-        //Varrendo Grupos para pegar Permissoes
-        $grupos = $this->grupo->where('empresa_id', '=', $empresa_id)->where($fieldSearch, 'like', '%' . $fieldValue . '%')->get($fieldReturn);
-        foreach ($grupos as $key => $grupo) {
-            $grupo_id = $grupo->id;
-            $grupo_name = $grupo->name;
-
-            $permissoes = "<div class='row'>";
-
-            //Varrendo Submodulos para pegar Permissoes por submodulos
-            $submodulos = Submodulo::all();
-            foreach ($submodulos as $key => $submodulo) {
-                $submodulo_id = $submodulo->id;
-                $submodulo_name = $submodulo->name;
-
-                //Buscando Permissoes
-                $dados = DB::table('grupos_permissoes')
-                    ->leftJoin('permissoes', 'permissoes.id', '=', 'grupos_permissoes.permissao_id')
-                    ->select(['permissoes.name as permissaoName'])
-                    ->where('grupos_permissoes.grupo_id', $grupo_id)
-                    ->where('permissoes.submodulo_id', $submodulo_id)
-                    ->get();
-
-                $permissoesSubmodulo = "<div class='col-12 col-md-3 pb-3'>";
-                $permissoesSubmodulo .= "<b class='pb-3'>".$submodulo_name."</b>";
-
-                $ctrl = 0;
-                foreach ($dados as $key => $dado) {
-                    $ctrl++;
-
-                    $p = explode('_', $dado->permissaoName);
-                    $p = $p[count($p)-1];
-
-                    if ($p == 'list') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-primary'></i> Listar</label></div>";}
-                    if ($p == 'show') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-info'></i> Mostrar</label></div>";}
-                    if ($p == 'create') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-success'></i> Criar</label></div>";}
-                    if ($p == 'edit') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-warning'></i> Editar</label></div>";}
-                    if ($p == 'destroy') {$perm = "<div class='col-12'><label class='form-check-label'><i class='fa fa-check text-danger'></i> Deletar</label></div>";}
-
-                    $permissoesSubmodulo .= $perm;
-                }
-
-                $permissoesSubmodulo .= "</div>";
-
-                if ($ctrl > 0) {$permissoes .= $permissoesSubmodulo;}
-            }
-
-            $permissoes .= "</div>";
-
-            //Montando registros de retorno
-            $registros[] = [
-                'id' => $grupo_id,
-                'name' => $grupo_name,
-                'permissoes' => $permissoes
-            ];
-        }
-
-        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, '', $registros), 200);
+        return response()->json(ApiReturn::data('Lista de dados enviada com sucesso.', 2000, null, $registros), 200);
     }
 }

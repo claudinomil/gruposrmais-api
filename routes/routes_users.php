@@ -5,8 +5,7 @@ use App\Http\Controllers\UserController;
 Route::prefix('users')->group(function () {
     Route::get('/index/{empresa_id}', [UserController::class, 'index'])->middleware(['auth:api', 'scope:claudino']);
     Route::get('/show/{id}', [UserController::class, 'show'])->middleware(['auth:api', 'scope:claudino']);
-    Route::get('/search/{field}/{value}/{empresa_id}', [UserController::class, 'search'])->middleware(['auth:api', 'scope:claudino']);
-    Route::get('/research/{fieldSearch}/{fieldValue}/{fieldReturn}/{empresa_id}', [UserController::class, 'research'])->middleware(['auth:api', 'scope:claudino']);
+    Route::get('/filter/{array_dados}/{empresa_id}', [UserController::class, 'filter'])->middleware(['auth:api', 'scope:claudino']);
     Route::post('/store/{empresa_id}', [UserController::class, 'store'])->middleware(['auth:api', 'scope:claudino']);
     Route::put('/update/{id}/{empresa_id}', [UserController::class, 'update'])->middleware(['auth:api', 'scope:claudino']);
     Route::delete('/destroy/{id}/{empresa_id}', [UserController::class, 'destroy'])->middleware(['auth:api', 'scope:claudino']);

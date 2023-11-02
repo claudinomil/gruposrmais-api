@@ -5,7 +5,7 @@ use App\Http\Controllers\BrigadaController;
 Route::prefix('brigadas')->group(function () {
     Route::get('/index/{empresa_id}', [BrigadaController::class, 'index'])->middleware(['auth:api', 'scope:claudino']);
     Route::get('/show/{id}', [BrigadaController::class, 'show'])->middleware(['auth:api', 'scope:claudino']);
-    Route::get('/search/{field}/{value}/{empresa_id}', [BrigadaController::class, 'search'])->middleware(['auth:api', 'scope:claudino']);
+    Route::get('/filter/{array_dados}/{empresa_id}', [BrigadaController::class, 'filter'])->middleware(['auth:api', 'scope:claudino']);
     Route::put('/update/{id}/{empresa_id}', [BrigadaController::class, 'update'])->middleware(['auth:api', 'scope:claudino']);
 
     //Escalas e Rondas
